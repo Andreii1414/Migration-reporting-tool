@@ -20,9 +20,11 @@ const SubmitReport = () => {
           throw new Error("Failed to fetch species");
         }
         const data = await response.json();
-        console.log("Species data:", data);
 
-        return data.data.map((item) => item.name.replace(/\b\w/g, (char) => char.toUpperCase()));
+        return data.data.map((item) => ({
+          id: item._id,
+          name: item.name.replace(/\b\w/g, (char) => char.toUpperCase()),
+        }));
       } catch (error) {
         console.error("Error fetching species:", error);
         return [];
@@ -31,7 +33,7 @@ const SubmitReport = () => {
 
     fetchSpecies().then((speciesList) => {
       setAvailableSpecies(speciesList);
-      setSpecies(speciesList.length ? speciesList[0] : "");
+      setSpecies(speciesList.length ? speciesList[0].id : ""); 
     });
 
     if (navigator.geolocation) {
@@ -48,7 +50,7 @@ const SubmitReport = () => {
   }, []);
 
   const filteredSpecies = availableSpecies.filter((specie) =>
-    specie.toLowerCase().includes(searchTerm.toLowerCase())
+    specie.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   const handleImageUpload = (event) => {
@@ -62,7 +64,7 @@ const SubmitReport = () => {
 
   const uploadToCloudinary = async (base64Image) => {
     setIsUploading(true);
-    const cloudName = "dmqrzhoup"; 
+    const cloudName = "dmqrzhoup";
     const uploadPreset = "unsigned_preset";
 
     const data = new FormData();
@@ -112,13 +114,32 @@ const SubmitReport = () => {
       title,
       description,
       date,
-      species,
-      image: cloudinaryLink,
-      location,
+      speciesId: species,
+      imageUrl: cloudinaryLink,
+      latitude: location.latitude,
+      longitude: location.longitude,
     };
 
-    console.log("Report submitted:", reportData);
-    alert("Report submitted successfully!");
+    console.log("Submitting report: ", JSON.stringify(reportData));
+
+    try {
+      const response = await fetch("http://localhost:5000/api/reports/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(reportData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to submit report.");
+      }
+      
+      alert("Report submitted successfully!");
+    } catch (error) {
+      console.error("Error submitting report:", error);
+      alert("Failed to submit report. Please try again.");
+    }
   };
 
   return (
@@ -152,8 +173,8 @@ const SubmitReport = () => {
         {filteredSpecies.length > 0 ? (
           <select value={species} onChange={(e) => setSpecies(e.target.value)}>
             {filteredSpecies.map((specie) => (
-              <option key={specie} value={specie}>
-                {specie}
+              <option key={specie.id} value={specie.id}>
+                {specie.name}
               </option>
             ))}
           </select>
