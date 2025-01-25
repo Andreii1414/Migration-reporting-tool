@@ -14,6 +14,7 @@ const appointmentRoutes = require("./src/routes/appointmentRoutes");
 const staticRoutes = require("./src/routes/staticRoutes");
 const reportRoutes = require("./src/routes/reportRoutes");
 const speciesRoutes = require("./src/routes/speciesRoutes");
+const dataRoutes = require("./src/routes/dataRoutes");
 
 const app = express();
 const cors = require("cors");
@@ -38,6 +39,7 @@ app.use("/api/conversations", conversationRoutes);
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/species", speciesRoutes);
+app.use("/api/data", dataRoutes);
 
 app.use("/static", staticRoutes);
 
