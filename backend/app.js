@@ -12,8 +12,13 @@ const authRoutes = require("./src/routes/authRoutes");
 const conversationRoutes = require("./src/routes/conversationRoutes");
 const appointmentRoutes = require("./src/routes/appointmentRoutes");
 const staticRoutes = require("./src/routes/staticRoutes");
+const reportRoutes = require("./src/routes/reportRoutes");
+const speciesRoutes = require("./src/routes/speciesRoutes");
 
 const app = express();
+const cors = require("cors");
+
+app.use(cors());
 
 //middlewares
 app.use(express.json());
@@ -31,6 +36,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/profile", userRoutes);
 app.use("/api/conversations", conversationRoutes);
 app.use("/api/appointments", appointmentRoutes);
+app.use("/api/reports", reportRoutes);
+app.use("/api/species", speciesRoutes);
+
 app.use("/static", staticRoutes);
 
 // this middleware will be executed if no route is matched
