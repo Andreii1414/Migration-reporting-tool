@@ -8,5 +8,6 @@ const router = express.Router();
 //router.use(checkAccessToken);
 
 router.get('/', speciesController.getSpecies);
+router.get('/:id', validateParamId, speciesController.getSpeciesById);
 
 module.exports = router;

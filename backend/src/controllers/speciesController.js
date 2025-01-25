@@ -15,7 +15,21 @@ const getSpecies = async (req, res) => {
     }
     };
     
+const getSpeciesById = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const species = await speciesService.getSpeciesById(id);
+        apiResponse.handleResponse(res, species);
+    } catch (error) {
+        console.log(error);
+        apiResponse.error(res, {
+        statusCode: StatusCodes.InternalServerError,
+        error: ErrorMessages.UnexpectedErrorGet,
+        });
+    }
+    };
 
 module.exports = {
     getSpecies,
+    getSpeciesById,
 };
