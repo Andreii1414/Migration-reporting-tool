@@ -23,12 +23,20 @@ const MapView = () => {
   const [zoom, setZoom] = useState(3);
 
   const fetchSpecies = async () => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(["All species","Deer", "Wolf", "Bear", "Eagle", "Fox", "Rabbit", "Moose"]);
-      }, 500);
-    });
+    try {
+      const response = await fetch("http://localhost:5000/api/species");
+      if (!response.ok) {
+        throw new Error("Failed to fetch species");
+      }
+      const data = await response.json();
+      const speciesList = ["All species", ...data.data.map((item) => item.name.replace(/\b\w/g, char => char.toUpperCase()))];
+      return speciesList;
+    } catch (error) {
+      console.error("Error fetching species:", error);
+      return [];
+    }
   };
+  
 
   useEffect(() => {
     const loadSpecies = async () => {

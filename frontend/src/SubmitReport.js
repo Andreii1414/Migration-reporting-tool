@@ -14,11 +14,19 @@ const SubmitReport = () => {
 
   useEffect(() => {
     const fetchSpecies = async () => {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve(["Deer", "Wolf", "Bear", "Eagle", "Fox", "Rabbit", "Moose"]);
-        }, 500);
-      });
+      try {
+        const response = await fetch("http://localhost:5000/api/species");
+        if (!response.ok) {
+          throw new Error("Failed to fetch species");
+        }
+        const data = await response.json();
+        console.log("Species data:", data);
+
+        return data.data.map((item) => item.name.replace(/\b\w/g, (char) => char.toUpperCase()));
+      } catch (error) {
+        console.error("Error fetching species:", error);
+        return [];
+      }
     };
 
     fetchSpecies().then((speciesList) => {
@@ -162,7 +170,6 @@ const SubmitReport = () => {
             <img src={image} alt="Uploaded Preview" />
           </div>
         )}
-
 
         {location ? (
           <p className="location-text">
