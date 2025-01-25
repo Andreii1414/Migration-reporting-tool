@@ -29,51 +29,72 @@ const MapView = () => {
         throw new Error("Failed to fetch species");
       }
       const data = await response.json();
-      const speciesList = ["All species", ...data.data.map((item) => item.name.replace(/\b\w/g, char => char.toUpperCase()))];
+      
+      const speciesList = [
+        { id: null, name: "All species" },
+        ...data.data.map((item) => ({
+          id: item._id,
+          name: item.name.replace(/\b\w/g, (char) => char.toUpperCase()),
+        })),
+      ];
       return speciesList;
     } catch (error) {
       console.error("Error fetching species:", error);
       return [];
     }
   };
-  
 
   useEffect(() => {
     const loadSpecies = async () => {
       const speciesList = await fetchSpecies();
       setAvailableSpecies(speciesList);
-      setSpecies(speciesList.length ? speciesList[0] : "");
+      setSpecies(speciesList.length ? speciesList[0].id : null);
     };
 
     loadSpecies();
   }, []);
 
   const filteredSpecies = availableSpecies.filter((specie) =>
-    specie.toLowerCase().includes(searchTerm.toLowerCase())
+    specie.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const generateDummyData = () => {
-    const dummyMarkers = [
-      {
-        title: "Majestic " + species,
-        description: "A beautiful sighting of a " + species,
-        image: "https://t4.ftcdn.net/jpg/05/65/36/03/360_F_565360370_LrWWCTxczrmwqpsPYPljiFyE4gFqpecr.jpg",
-        species: species,
-        date_taken: new Date().toISOString().split("T")[0],
-        latitude: 44.465155,
-        longitude: 26.591472,
-      },
-      {
-        title: "Wild " + species,
-        description: "Spotted in the wilderness",
-        image: "https://res.cloudinary.com/dmqrzhoup/image/upload/v1737567850/iortgvxtdjwqppxqt3bn.jpg",
-        species: species,
-        date_taken: new Date().toISOString().split("T")[0],
-        latitude: 60.947513,
-        longitude: 98.850633,
-      },
-    ];
-    setMarkers(dummyMarkers);
+  const fetchReports = async () => {
+    try {
+      const response = await fetch(
+        `http://localhost:5000/api/reports?season=${season.toLowerCase()}${
+          species ? `&speciesId=${species}` : ""
+        }`
+      );
+      if (!response.ok) {
+        throw new Error("Failed to fetch reports");
+      }
+      
+      const data = await response.json();
+      const reports = data.data.map((report) => {
+        const speciesMatch = availableSpecies.find((s) => s.id === report.speciesId);
+        const speciesName = speciesMatch ? speciesMatch.name : "Unknown";
+  
+        return {
+          title: report.title,
+          description: report.description,
+          image: report.imageUrl,
+          species: speciesName,
+          date_taken: new Date(report.date).toISOString().split("T")[0],
+          latitude: report.latitude,
+          longitude: report.longitude,
+        };
+      });
+  
+      return reports;
+    } catch (error) {
+      console.error("Error fetching reports:", error);
+      return [];
+    }
+  };
+
+  const generateMarkers = async () => {
+    const reports = await fetchReports();
+    setMarkers(reports);
   };
 
   return (
@@ -98,10 +119,13 @@ const MapView = () => {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           {filteredSpecies.length > 0 ? (
-            <select value={species} onChange={(e) => setSpecies(e.target.value)}>
+            <select
+              value={species}
+              onChange={(e) => setSpecies(e.target.value)}
+            >
               {filteredSpecies.map((specie) => (
-                <option key={specie} value={specie}>
-                  {specie}
+                <option key={specie.id} value={specie.id}>
+                  {specie.name}
                 </option>
               ))}
             </select>
@@ -111,13 +135,20 @@ const MapView = () => {
         </div>
 
         {filteredSpecies.length > 0 && (
-          <button className="update-button" onClick={generateDummyData}>
+          <button className="update-button" onClick={generateMarkers}>
             Update Map
           </button>
         )}
       </div>
 
-      <MapContainer center={[20, 0]} zoom={zoom} className="map-box" whenCreated={(map) => map.on("zoomend", () => setZoom(map.getZoom()))}>
+      <MapContainer
+        center={[20, 0]}
+        zoom={zoom}
+        className="map-box"
+        whenCreated={(map) =>
+          map.on("zoomend", () => setZoom(map.getZoom()))
+        }
+      >
         <TileLayer
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
@@ -129,11 +160,23 @@ const MapView = () => {
             icon={DynamicIcon({ zoom })}
           >
             <Popup>
-              <strong>Title: {marker.title.length > 50 ? `${marker.title.substring(0, 50)}...` : marker.title}</strong>
+              <strong>
+                Title:{" "}
+                {marker.title.length > 50
+                  ? `${marker.title.substring(0, 50)}...`
+                  : marker.title}
+              </strong>
               <p>Species: {marker.species}</p>
-              <p>Description: {marker.description.length > 100 ? `${marker.description.substring(0, 100)}...` : marker.description}</p>
+              <p>
+                Description:{" "}
+                {marker.description.length > 100
+                  ? `${marker.description.substring(0, 100)}...`
+                  : marker.description}
+              </p>
               <img src={marker.image} alt={marker.title} width="100" />
-              <p><small>Date: {marker.date_taken}</small></p>
+              <p>
+                <small>Date: {marker.date_taken}</small>
+              </p>
             </Popup>
           </Marker>
         ))}

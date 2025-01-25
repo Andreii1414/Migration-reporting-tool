@@ -8,5 +8,6 @@ const router = express.Router();
 //router.use(checkAccessToken);
 
 router.post('/', createReportValidator, reportController.createReport);
+router.get('/', reportController.getReportsBySeasonAndSpecies);
 
 module.exports = router;
