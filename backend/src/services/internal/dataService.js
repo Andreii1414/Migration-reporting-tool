@@ -17,8 +17,14 @@ async function getSearchTerms() {
 
 async function getMinDate() {
     const latestReport = await Report.findOne().sort({ date: -1 });
-    return latestReport ? latestReport.date.toISOString().split('T')[0] : '2024-02-01';
+    if (latestReport) {
+        const nextDate = new Date(latestReport.date);
+        nextDate.setDate(nextDate.getDate() + 1);
+        return nextDate.toISOString().split('T')[0];
+    }
+    return '2024-02-01';
 }
+
 
 function getMaxDate() {
     return new Date().toISOString().split('T')[0];
@@ -26,6 +32,7 @@ function getMaxDate() {
 
 async function fetchPhotos(term, minDate, maxDate) {
     let allPhotos = [];
+    //console.log('Fetching photos for', term);
     for (let page = 1; page <= 1; page++) {
         const response = await axios.get(FLICKR_API_URL, {
             headers: {
