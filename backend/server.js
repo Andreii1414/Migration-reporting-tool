@@ -1,10 +1,26 @@
 require("dotenv").config();
 const mongoose = require("mongoose");
 const app = require("./app");
+const cron = require("node-cron");
+const fetch = require("node-fetch");
 
 const PORT = process.env.PORT;
 const HOST = process.env.HOST;
 const MONGODB_URI = process.env.MONGODB_URI;
+
+cron.schedule("0 0 * * *", async () => {
+  console.log("Calling API at midnight...");
+  try {
+    const response = await fetch("http://localhost:5000/api/data");
+    if (!response.ok) throw new Error("Request failed");
+    
+    const data = await response.json();
+    //console.log("API Response:", data);
+  } catch (error) {
+    console.error("Error calling API:", error);
+  }
+});
+
 
 const startServer = async () => {
   try {
