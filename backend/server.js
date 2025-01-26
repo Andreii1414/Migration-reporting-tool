@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const app = require("./app");
 const cron = require("node-cron");
 const fetch = require("node-fetch");
+const { sendReportsToGraphDB, clearGraphDB } = require("./src/services/internal/graphdbService.js");
 
 const PORT = process.env.PORT;
 const HOST = process.env.HOST;
@@ -13,7 +14,8 @@ cron.schedule("0 0 * * *", async () => {
   try {
     const response = await fetch("http://localhost:5000/api/data");
     if (!response.ok) throw new Error("Request failed");
-    
+    await clearGraphDB();
+    await sendReportsToGraphDB();
     const data = await response.json();
     //console.log("API Response:", data);
   } catch (error) {
@@ -36,6 +38,10 @@ const startServer = async () => {
     app.listen(PORT, HOST, () => {
       console.log(`Server is running on http://${HOST}:${PORT}`);
     });
+
+    await clearGraphDB();
+    await sendReportsToGraphDB();
+
   }
   catch (err) {
     console.error("Error starting server", err);

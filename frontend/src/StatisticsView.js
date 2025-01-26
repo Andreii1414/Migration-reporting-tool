@@ -15,24 +15,24 @@ const StatisticsView = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const totalReportsRes = await fetch("http://localhost:5000/api/statistics/total-reports");
+        const totalReportsRes = await fetch("http://localhost:5000/api/sparql/total-reports");
         const totalReportsData = await totalReportsRes.json();
 
-        const continentsRes = await fetch("http://localhost:5000/api/statistics/most-reported-continents");
+        const continentsRes = await fetch("http://localhost:5000/api/sparql/most-reported-continents");
         const continentsData = await continentsRes.json();
 
-        const countriesRes = await fetch("http://localhost:5000/api/statistics/most-reported-countries");
+        const countriesRes = await fetch("http://localhost:5000/api/sparql/most-reported-countries");
         const countriesData = await countriesRes.json();
 
         const seasons = ["spring", "summer", "autumn", "winter"];
         const seasonsData = {};
         for (const season of seasons) {
-          const seasonRes = await fetch(`http://localhost:5000/api/statistics/report-by-season/${season}`);
+          const seasonRes = await fetch(`http://localhost:5000/api/sparql/report-by-season/${season}`);
           const seasonData = await seasonRes.json();
           seasonsData[season] = seasonData.data.count;
         }
 
-        const speciesRes = await fetch("http://localhost:5000/api/statistics/top-reported-species");
+        const speciesRes = await fetch("http://localhost:5000/api/sparql/top-reported-species");
         const speciesData = await speciesRes.json();
 
         setData({
@@ -73,10 +73,10 @@ const StatisticsView = () => {
         label="Reports by Continent"
         value={
           <ul className="numbered-list">
-            {data.mostReportedContinents.map(({ _id, count }, index) => (
-              <li key={_id}>
+            {data.mostReportedContinents.map(({ continent, count }, index) => (
+              <li key={continent}>
                 <span>{index + 1}. </span>
-                <strong>{_id}:</strong> {count} reports
+                <strong>{continent}:</strong> {count} reports
               </li>
             ))}
           </ul>
@@ -88,10 +88,10 @@ const StatisticsView = () => {
         label="Top 10 Reported Countries"
         value={
           <ul className="numbered-list">
-            {data.mostReportedCountries.map(({ _id, count }, index) => (
-              <li key={_id}>
+            {data.mostReportedCountries.map(({ country, count }, index) => (
+              <li key={country}>
                 <span>{index + 1}. </span>
-                <strong>{_id}:</strong> {count} reports
+                <strong>{country}:</strong> {count} reports
               </li>
             ))}
           </ul>

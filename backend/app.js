@@ -16,6 +16,7 @@ const reportRoutes = require("./src/routes/reportRoutes");
 const speciesRoutes = require("./src/routes/speciesRoutes");
 const dataRoutes = require("./src/routes/dataRoutes");
 const statisticsRoutes = require("./src/routes/statisticsRoutes");
+const graphdbRoutes = require("./src/routes/graphdbRoutes");
 
 const app = express();
 const cors = require("cors");
@@ -42,6 +43,7 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/species", speciesRoutes);
 app.use("/api/data", dataRoutes);
 app.use("/api/statistics", statisticsRoutes);
+app.use("/api/sparql", graphdbRoutes);
 
 app.use("/static", staticRoutes);
 
