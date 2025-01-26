@@ -1,9 +1,40 @@
 const Report = require('../../models/reportModel');
 const { ResponseTypes, StatusCodes, ErrorMessages } = require('../../responses/apiConstants');
+const axios = require('axios');
+
+async function getLocationData(lat, lon) {
+    const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`;
+    try {
+        const response = await axios.get(url);
+        const data = response.data;
+
+        if (data) {
+            return {
+                country: data.countryName || "Unknown",
+                continent: data.continent || "Unknown",
+            };
+        }
+    } catch (error) {
+        console.error("Error fetching geolocation data:", error.message);
+    }
+    return { country: "Unknown", continent: "Unknown" };
+}
+
 
 const createReport = async (reportData) => {
     try {
-        const report = new Report(reportData);
+        const locationData = await getLocationData(reportData.latitude, reportData.longitude);
+        const report = new Report({
+            title: reportData.title,
+            description: reportData.description,
+            date: reportData.date,
+            speciesId: reportData.speciesId,
+            imageUrl: reportData.imageUrl,
+            latitude: reportData.latitude,
+            longitude: reportData.longitude,
+            country: locationData.country,
+            continent: locationData.continent,
+        });
         await report.save();
         return {
             type: ResponseTypes.Success,

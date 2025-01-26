@@ -44,6 +44,14 @@ const reportSchema = new mongoose.Schema(
         type: Number,
         required: [true, "Longitude is required"],
         },
+        continent: {
+        type: String,
+        required: [true, "Continent is required"],
+        },
+        country: {
+        type: String,
+        required: [true, "Country is required"],
+        },
     },
     {
         collection: "reports",

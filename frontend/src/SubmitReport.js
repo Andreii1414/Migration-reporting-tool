@@ -118,7 +118,10 @@ const SubmitReport = () => {
       imageUrl: cloudinaryLink,
       latitude: location.latitude,
       longitude: location.longitude,
+      country: "Undefined",
+      continent: "Undefined",
     };
+
 
     console.log("Submitting report: ", JSON.stringify(reportData));
 

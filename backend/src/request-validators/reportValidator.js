@@ -9,6 +9,8 @@ const reportSchema = Joi.object({
     imageUrl: Joi.string().trim().min(1).max(100).required(),
     latitude: Joi.number().required(),
     longitude: Joi.number().required(),
+    continent: Joi.string().trim().min(1).max(100).required(),
+    country: Joi.string().trim().min(1).max(100).required(),
     }).unknown(false);
 
 const createReportValidator = (req, res, next) => {

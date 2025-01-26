@@ -82,6 +82,24 @@ async function checkForBird(imageUri) {
     }
 }
 
+async function getLocationData(lat, lon) {
+    const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`;
+    try {
+        const response = await axios.get(url);
+        const data = response.data;
+
+        if (data) {
+            return {
+                country: data.countryName || "Unknown",
+                continent: data.continent || "Unknown",
+            };
+        }
+    } catch (error) {
+        console.error("Error fetching geolocation data:", error.message);
+    }
+    return { country: "Unknown", continent: "Unknown" };
+}
+
 const truncate = (str, maxLength) => {
     if (!str) return ''; 
     return str.length > maxLength ? str.slice(0, maxLength) : str;
@@ -110,14 +128,19 @@ async function getData() {
     const speciesMap = new Map();
     species.forEach(s => speciesMap.set(s.name, s._id));
 
-    const reports = allResults.map(photo => ({
-        speciesId: speciesMap.get(photo.search_term),
-        date: new Date(photo.date_taken),
-        latitude: photo.latitude,
-        longitude: photo.longitude,
-        description: truncate(photo.description?._content?.trim() || "No description provided", 500),
-        title: truncate(photo.title?.trim() || "Untitled" , 100),
-        imageUrl: photo.image_url,
+    const reports = await Promise.all(allResults.map(async (photo) => {
+        const { country, continent } = await getLocationData(photo.latitude, photo.longitude);
+        return {
+            speciesId: speciesMap.get(photo.search_term),
+            date: new Date(photo.date_taken),
+            latitude: photo.latitude,
+            longitude: photo.longitude,
+            country,
+            continent,
+            description: truncate(photo.description?._content?.trim() || "No description provided", 500),
+            title: truncate(photo.title?.trim() || "Untitled", 100),
+            imageUrl: photo.image_url,
+        };
     }));
 
     await Report.insertMany(reports);
