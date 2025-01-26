@@ -1,20 +1,59 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "./StatisticsView.css";
-import { FaChartBar, FaGlobe, FaList, FaClipboardList } from "react-icons/fa";
+import { FaChartBar, FaList, FaClipboardList } from "react-icons/fa";
 
 const StatisticsView = () => {
-  const [data] = useState({
-    totalReports: 120,
-    reportsBySeason: {
-      Spring: 30,
-      Summer: 25,
-      Autumn: 40,
-      Winter: 25
-    },
-    mostReportedContinent: "Europe",
-    mostReportedCountry: "Germany",
-    top5Species: ["Red Fox", "Brown Bear", "Grey Wolf", "European Bison", "Eurasian Lynx"]
+  const [data, setData] = useState({
+    totalReports: null,
+    reportsBySeason: {},
+    mostReportedContinents: [],
+    mostReportedCountries: [],
+    top5Species: []
   });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const totalReportsRes = await fetch("http://localhost:5000/api/statistics/total-reports");
+        const totalReportsData = await totalReportsRes.json();
+
+        const continentsRes = await fetch("http://localhost:5000/api/statistics/most-reported-continents");
+        const continentsData = await continentsRes.json();
+
+        const countriesRes = await fetch("http://localhost:5000/api/statistics/most-reported-countries");
+        const countriesData = await countriesRes.json();
+
+        const seasons = ["spring", "summer", "autumn", "winter"];
+        const seasonsData = {};
+        for (const season of seasons) {
+          const seasonRes = await fetch(`http://localhost:5000/api/statistics/report-by-season/${season}`);
+          const seasonData = await seasonRes.json();
+          seasonsData[season] = seasonData.data.count;
+        }
+
+        const speciesRes = await fetch("http://localhost:5000/api/statistics/top-reported-species");
+        const speciesData = await speciesRes.json();
+
+        setData({
+          totalReports: totalReportsData.data,
+          reportsBySeason: seasonsData,
+          mostReportedContinents: continentsData.data,
+          mostReportedCountries: countriesData.data,
+          top5Species: speciesData.data
+        });
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching statistics:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) {
+    return <div>Loading statistics...</div>;
+  }
 
   return (
     <div className="statistics-container">
@@ -23,29 +62,41 @@ const StatisticsView = () => {
         icon={<FaClipboardList />} 
         label="Total Reports" 
         value={
-            <>
-              Our database contains a total of <strong>{data.totalReports} reports</strong> collected from users and social media platforms, helping us track wildlife distribution across the globe.
-            </>
-          }
-        />
+          <>
+            Our database contains a total of <strong>{data.totalReports} reports</strong> collected from users and social media platforms, helping us track wildlife distribution across the globe.
+          </>
+        }
+      />
+
       <h2>Geographically Grouped</h2>
       <StatBox 
-        icon={<FaGlobe />} 
-        label="Most Reported Continent" 
+        label="Reports by Continent"
         value={
-            <>
-                The continent with the highest number of reports is <strong>{data.mostReportedContinent}</strong>, indicating significant wildlife presence and user engagement.
-            </>
-        } 
+          <ul className="numbered-list">
+            {data.mostReportedContinents.map(({ _id, count }, index) => (
+              <li key={_id}>
+                <span>{index + 1}. </span>
+                <strong>{_id}:</strong> {count} reports
+              </li>
+            ))}
+          </ul>
+        }
+        className="continent-country-stat"
       />
+      
       <StatBox 
-        icon={<FaGlobe />} 
-        label="Most Reported Country" 
+        label="Top 10 Reported Countries"
         value={
-            <>
-            The country with the most reports is <strong>{data.mostReportedCountry}</strong>, showing a strong interest in biodiversity monitoring.
-            </>
+          <ul className="numbered-list">
+            {data.mostReportedCountries.map(({ _id, count }, index) => (
+              <li key={_id}>
+                <span>{index + 1}. </span>
+                <strong>{_id}:</strong> {count} reports
+              </li>
+            ))}
+          </ul>
         } 
+        className="continent-country-stat"
       />
 
       <h2>Reports by Season</h2>
@@ -53,24 +104,24 @@ const StatisticsView = () => {
         <StatBox 
           key={season} 
           icon={<FaChartBar />} 
-          label={`${season} Reports`} 
+          label={`${season.charAt(0).toUpperCase() + season.slice(1)} Reports`} 
           value={
             <>
-            During ${season.toLowerCase()}, a total of <strong>{count} reports</strong> were recorded, helping us understand seasonal wildlife activity.
+              During {season.toLowerCase()}, a total of <strong>{count} reports</strong> were recorded, helping us understand seasonal wildlife activity.
             </>
           } 
         />
       ))}
 
       <h2>Top Reported Species</h2>
-      {data.top5Species.map((species, index) => (
+      {data.top5Species.map(({ name, count }, index) => (
         <StatBox 
-          key={species} 
+          key={name} 
           icon={<FaList />} 
           label={`#${index + 1} Reported Species`} 
           value={
             <>
-            One of the most commonly reported species is the <strong>{species}</strong>, frequently observed in various environments.
+              One of the most commonly reported species is the <strong>{name}</strong>, with <strong>{count}</strong> observations.
             </>
           } 
         />
@@ -82,7 +133,7 @@ const StatisticsView = () => {
 const StatBox = ({ icon, label, value }) => {
   return (
     <div className="stat-box">
-      <div className="icon-box">{icon}</div>
+      <div className="icon-box">{icon && icon}</div>
       <div className="text-box">
         <strong>{label}:</strong> {value}
       </div>
