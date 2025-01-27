@@ -37,6 +37,7 @@ const MapView = () => {
           name: item.name.replace(/\b\w/g, (char) => char.toUpperCase()),
         })),
       ];
+      speciesList.sort((a, b) => a.name.localeCompare(b.name));
       return speciesList;
     } catch (error) {
       console.error("Error fetching species:", error);
