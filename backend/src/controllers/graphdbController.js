@@ -68,6 +68,24 @@ const getTopReportedSpecies = async (req, res) => {
         });
     }
 };
+const customQuery = async (req, res) => {
+    try {
+      const query = req.query.query;
+      if (!query) {
+        return res.status(400).json({ error: "SPARQL query is required" });
+      }
+      const results = await graphdbService.customQuery(query);
+      res.status(200).json({
+        data: results,
+      });
+    } catch (error) {
+      console.error("Error executing SPARQL query:", error);
+      res.status(500).json({
+        error: "An error occurred while executing the SPARQL query",
+      });
+    }
+  };
+  
 
 module.exports = {
     getTotalReports,
@@ -75,4 +93,5 @@ module.exports = {
     getMostReportedCountries,
     getReportsBySeason,
     getTopReportedSpecies,
+    customQuery,
 };

@@ -244,6 +244,23 @@ const getTopReportedSpecies = async () => {
     }
 };
 
+async function customQuery(query) {
+    try {
+        const result = await executeSPARQLQuery(query);
+        return {
+            type: ResponseTypes.Success,
+            status: StatusCodes.OK,
+            data: result,
+        };
+    } catch (error) {
+        return {
+            type: ResponseTypes.Error,
+            status: StatusCodes.InternalServerError,
+            error: ErrorMessages.UnexpectedErrorFetch,
+        };
+    }
+}
+
 
 
 module.exports = {
@@ -254,4 +271,5 @@ module.exports = {
   getMostReportedCountries,
   getReportsBySeason,
   getTopReportedSpecies,
+  customQuery,
 };

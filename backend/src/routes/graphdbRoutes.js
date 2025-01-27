@@ -11,5 +11,6 @@ router.get('/most-reported-continents', graphdbController.getMostReportedContine
 router.get('/most-reported-countries', graphdbController.getMostReportedCountries);
 router.get('/report-by-season/:season', graphdbController.getReportsBySeason);
 router.get('/top-reported-species', graphdbController.getTopReportedSpecies);
+router.get('/custom-query', graphdbController.customQuery);
 
 module.exports = router;
