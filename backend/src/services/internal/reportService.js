@@ -1,9 +1,10 @@
 const Report = require('../../models/reportModel');
 const { ResponseTypes, StatusCodes, ErrorMessages } = require('../../responses/apiConstants');
 const axios = require('axios');
+const { sendReportsToGraphDB, clearGraphDB } = require('./graphDBService');
 
 async function getLocationData(lat, lon) {
-    const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`;
+    const url = `https://api.bigdatacloud.net/data/reverse-geocode?latitude=${lat}&longitude=${lon}&localityLanguage=en&key=${process.env.BIGDATACLOUD_API_KEY}`;
     try {
         const response = await axios.get(url);
         const data = response.data;
@@ -36,6 +37,10 @@ const createReport = async (reportData) => {
             continent: locationData.continent,
         });
         await report.save();
+
+        await clearGraphDB();
+        await sendReportsToGraphDB();
+
         return {
             type: ResponseTypes.Success,
             status: StatusCodes.Created,

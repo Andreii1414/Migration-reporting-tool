@@ -83,7 +83,7 @@ async function checkForBird(imageUri) {
 }
 
 async function getLocationData(lat, lon) {
-    const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`;
+    const url = `https://api.bigdatacloud.net/data/reverse-geocode?latitude=${lat}&longitude=${lon}&localityLanguage=en&key=${process.env.BIGDATACLOUD_API_KEY}`;
     try {
         const response = await axios.get(url);
         const data = response.data;
