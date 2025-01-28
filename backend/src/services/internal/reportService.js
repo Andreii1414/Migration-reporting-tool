@@ -70,9 +70,10 @@ const getReportsBySeasonAndSpecies = async (season, speciesId) => {
                 $in: [{ $month: "$date" }, months],
             },
         };
-        if(speciesId) {
+        if(speciesId != "All species") {
             filter.speciesId = speciesId;
         }
+    
         
         const reports = await Report.find(filter);
         return {
