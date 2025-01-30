@@ -91,7 +91,48 @@ const getReportsBySeasonAndSpecies = async (season, speciesId) => {
 }
 };
 
+const updateReport = async (id, payload) => {
+    try {
+        const report = await Report.findByIdAndUpdate
+        (id, payload, { new: true });
+        return {
+            type: ResponseTypes.Success,
+            status: StatusCodes.OK,
+            data: report,
+        };
+    }
+    catch (error) {
+        console.error('Error updating report:', error);
+        return {
+            type: ResponseTypes.Error,
+            status: StatusCodes.InternalServerError,
+            error: ErrorMessages.UnexpectedErrorUpdate,
+        };
+    }
+}
+
+const deleteReport = async (id) => {
+    try {
+        const report = await Report.findByIdAndDelete(id);
+        return {
+            type: ResponseTypes.Success,
+            status: StatusCodes.OK,
+            data: report,
+        };
+    } catch (error) {
+        console.error('Error deleting report:', error);
+        return {
+            type: ResponseTypes.Error,
+            status: StatusCodes.InternalServerError,
+            error: ErrorMessages.UnexpectedErrorDelete,
+        };
+    }
+};
+
+
 module.exports = {
     createReport,
     getReportsBySeasonAndSpecies,
+    updateReport,
+    deleteReport,
 };

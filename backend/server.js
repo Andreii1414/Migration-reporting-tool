@@ -12,7 +12,11 @@ const MONGODB_URI = process.env.MONGODB_URI;
 cron.schedule("0 0 * * *", async () => {
   console.log("Calling API at midnight...");
   try {
-    const response = await fetch("http://localhost:5000/api/data");
+    const response = await fetch("http://localhost:5000/api/data", {
+      headers:{
+        "x-internal-secret": process.env.INTERNAL_SECRET,
+      }
+    });
     if (!response.ok) throw new Error("Request failed");
     await clearGraphDB();
     await sendReportsToGraphDB();

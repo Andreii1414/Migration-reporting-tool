@@ -61,7 +61,62 @@ const createReport = async (req, res) => {
       }
   };
 
+const updateReport = async (req, res) => {
+    try {
+        const userId = req.currentUser?.userId || null;
+        const { id } = req.params;
+        const {
+            title,
+            description,
+            date,
+            speciesId,
+            imageUrl,
+            latitude,
+            longitude,
+          } = req.body;
+
+          const payload = {
+            title,
+            description,
+            date,
+            speciesId,
+            imageUrl,
+            latitude,
+            longitude,
+          };
+
+          if (userId) {
+            payload.userId = userId;
+          }
+    
+        const report = await reportService.updateReport(id, payload);
+        apiResponse.handleResponse(res, report);
+    } catch (error) {
+        console.log(error);
+        apiResponse.error(res, {
+        statusCode: StatusCodes.InternalServerError,
+        error: ErrorMessages.UnexpectedErrorCreate,
+        });
+    }
+    };
+
+const deleteReport = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const report = await reportService.deleteReport(id);
+        apiResponse.handleResponse(res, report);
+    } catch (error) {
+        console.log(error);
+        apiResponse.error(res, {
+        statusCode: StatusCodes.InternalServerError,
+        error: ErrorMessages.UnexpectedErrorCreate,
+        });
+    }
+    };
+
 module.exports = {
     createReport,
     getReportsBySeasonAndSpecies,
+    updateReport,
+    deleteReport,
 };
