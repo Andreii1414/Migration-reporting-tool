@@ -55,8 +55,8 @@ const login = async (payload) => {
 
     const tokenPayload = {
       userId: user._id,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      email: user.email,
+      userName: user.userName,
     };
 
     const token = createJwtToken(
@@ -112,7 +112,7 @@ const login = async (payload) => {
 
 const register = async (payload) => {
   try {
-    const { firstName, lastName, email, password } = payload;
+    const { userName, email, password } = payload;
     const userExists = await User.findOne({
       email: email.toLowerCase(),
     }).exec();
@@ -126,16 +126,15 @@ const register = async (payload) => {
     }
 
     const user = new User({
-      firstName,
-      lastName,
+      userName,
       email: email.toLowerCase(),
       passwordHash: password,
     });
 
     const tokenPayload = {
       userId: user._id,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      email: user.email,
+      userName: user.userName,
     };
 
     const token = createJwtToken(
@@ -193,6 +192,35 @@ const register = async (payload) => {
     };
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const handleGoogleCallback = async (payload) => {
   try {
@@ -376,6 +404,7 @@ const sendVerificationEmail = async (email) => {
     const tokenPayload = {
       userId: user._id,
       email: user.email.toLowerCase(),
+      userName: user.userName,
     };
 
     const verificationToken = createJwtToken(

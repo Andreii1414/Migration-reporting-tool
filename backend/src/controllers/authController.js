@@ -26,8 +26,8 @@ const login = async (req, res) => {
 
 const register = async (req, res) => {
   try {
-    const { firstName, lastName, email, password, confirmPassword } = req.body;
-    const payload = { firstName, lastName, email, password, confirmPassword };
+    const { userName, email, password, confirmPassword } = req.body;
+    const payload = { userName, email, password, confirmPassword };
 
     const result = await authService.register(payload);
     ApiResponse.handleResponse(res, result);
@@ -41,6 +41,8 @@ const register = async (req, res) => {
 };
 
 const googleCallback = async (req, res) => {
+  console.log("Google callback");
+  console.log(req.user);
   try {
     if (req.user.isSuccess !== undefined) {
       const response = {
@@ -71,6 +73,17 @@ const googleCallback = async (req, res) => {
     res.send(responsePage);
   }
 };
+
+
+
+
+
+
+
+
+
+
+
 
 const logout = async (req, res) => {
   try {
@@ -103,6 +116,31 @@ const getAccessToken = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const sendVerificationEmail = async (req, res) => {
   try {

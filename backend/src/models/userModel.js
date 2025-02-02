@@ -4,21 +4,12 @@ const { regexPatterns } = require("../utils/constants");
 
 const userSchema = new mongoose.Schema(
   {
-    firstName: {
+    userName: {
       type: String,
-      required: [true, "First name is required"],
+      required: [true, "UserName name is required"],
       trim: true,
-      minlength: [2, "First name needs to be at least 2 characters long"],
-      maxlength: [50, "First name can be no more than 50 characters long"],
-      match: [regexPatterns.nameRegex, "First name is not valid"],
-    },
-    lastName: {
-      type: String,
-      required: [true, "Last name is required"],
-      trim: true,
-      minlength: [2, "Last name needs to be at least 2 characters long"],
-      maxlength: [50, "Last name can be no more than 50 characters long"],
-      match: [regexPatterns.nameRegex, "Last name is not valid"],
+      minlength: [2, "UserName name needs to be at least 2 characters long"],
+      maxlength: [100, "UserName name can be no more than 100 characters long"],
     },
     email: {
       type: String,

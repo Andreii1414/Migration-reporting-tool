@@ -18,8 +18,7 @@ const getProfileInformation = async (userId) => {
     }
 
     const responseData = {
-      firstName: user.firstName,
-      lastName: user.lastName,
+      userName: user.userName,
       email: user.email,
       profilePhoto: user.profilePhoto,
       verified: user.verified,

@@ -1,10 +1,9 @@
 const express = require("express");
-const passport = require("../config/passportConfig");
+const passport = require("../config/passportGoogle");
 const authController = require("../controllers/authController");
 const {
   loginValidator,
   registerValidator,
-  googleAuthValidator,
   emailValidator,
   changePasswordValidator,
   resetPasswordValidator,
@@ -19,26 +18,17 @@ const {
 const router = express.Router();
 
 router.post("/login", loginValidator, authController.login);
+
 router.post("/register", registerValidator, authController.register);
 
 router.get(
-  "/google/login",
-  passport.authenticate("google-login", { scope: ["profile", "email"] })
+  "/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
 );
+
 router.get(
-  "/google/login/callback",
-  passport.authenticate("google-login", { session: false }),
-  googleAuthValidator,
-  authController.googleCallback
-);
-router.get(
-  "/google/register",
-  passport.authenticate("google-register", { scope: ["profile", "email"] })
-);
-router.get(
-  "/google/register/callback",
-  passport.authenticate("google-register", { session: false }),
-  googleAuthValidator,
+  "/google/callback",
+  passport.authenticate("google", { session: false }),
   authController.googleCallback
 );
 
@@ -50,6 +40,37 @@ router.delete(
 );
 
 router.post("/token", checkRefreshToken, authController.getAccessToken);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 router.post(
   "/send-verification-email",

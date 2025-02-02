@@ -21,7 +21,6 @@ cron.schedule("0 0 * * *", async () => {
     await clearGraphDB();
     await sendReportsToGraphDB();
     const data = await response.json();
-    //console.log("API Response:", data);
   } catch (error) {
     console.error("Error calling API:", error);
   }
@@ -45,7 +44,6 @@ const startServer = async () => {
 
     // await clearGraphDB();
     // await sendReportsToGraphDB();
-
   }
   catch (err) {
     console.error("Error starting server", err);
