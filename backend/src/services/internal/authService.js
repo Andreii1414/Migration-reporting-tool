@@ -92,7 +92,7 @@ const login = async (payload) => {
       };
     }
 
-    if(user.verified === false) {
+    if (user.verified === false) {
       const sendVerificationResult = await sendVerificationEmail(user.email);
     }
 
@@ -249,8 +249,7 @@ const handleGoogleCallback = async (payload) => {
         token,
         refreshToken,
       },
-    }
-
+    };
   } catch (error) {
     console.error("Google authentication service error.", error);
     return {
@@ -357,19 +356,6 @@ const getAccessToken = async (userId, refreshToken) => {
     };
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 const sendVerificationEmail = async (email) => {
   try {
@@ -494,36 +480,6 @@ const verifyEmail = async (verificationToken) => {
     };
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 const changePassword = async (userId, payload) => {
   try {

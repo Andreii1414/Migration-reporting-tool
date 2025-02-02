@@ -1,7 +1,6 @@
 require("dotenv").config();
 const ApiResponse = require("../responses/apiResponse");
 const authService = require("../services/internal/authService");
-const { getGoogleAuthRedirectUrl } = require("../utils/constants");
 const {
   StatusCodes,
   AuthMessages,
@@ -78,7 +77,6 @@ const googleCallback = async (req, res) => {
   }
 };
 
-
 const logout = async (req, res) => {
   try {
     const userId = req.currentUser.userId;
@@ -132,9 +130,13 @@ const verifyEmail = async (req, res) => {
     const result = await authService.verifyEmail(verificationToken);
 
     if (result.type === "success") {
-      res.redirect("http://localhost:3000/verify-email-result?success=true");
+      res.redirect(
+        `${process.env.CLIENT_URL}/verify-email-result?success=true`
+      );
     } else {
-      res.redirect("http://localhost:3000/verify-email-result?success=false");
+      res.redirect(
+        `${process.env.CLIENT_URL}/verify-email-result?success=false`
+      );
     }
   } catch (error) {
     console.log(error);
@@ -144,28 +146,6 @@ const verifyEmail = async (req, res) => {
     });
   }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 const changePassword = async (req, res) => {
   try {

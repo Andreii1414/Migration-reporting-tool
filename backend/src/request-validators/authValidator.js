@@ -16,11 +16,7 @@ const loginValidator = (req, res, next) => {
 };
 
 const registerSchema = Joi.object({
-  userName: Joi.string()
-    .trim()
-    .min(2)
-    .max(100)
-    .required(),
+  userName: Joi.string().trim().min(2).max(100).required(),
   email: Joi.string().trim().email().required().regex(regexPatterns.emailRegex),
   password: Joi.string().min(5).required(),
   confirmPassword: Joi.string().min(5).required().valid(Joi.ref("password")),
@@ -33,25 +29,6 @@ const registerValidator = (req, res, next) => {
   if (handleValidationError(error, res)) return;
   next();
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 const emailSchema = Joi.object({
   email: Joi.string().trim().email().required().regex(regexPatterns.emailRegex),
