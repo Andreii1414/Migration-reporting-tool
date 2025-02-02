@@ -44,18 +44,6 @@ router.post("/token", checkRefreshToken, authController.getAccessToken);
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 router.post(
   "/send-verification-email",
   checkAccessToken,

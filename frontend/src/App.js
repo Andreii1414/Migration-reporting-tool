@@ -9,6 +9,7 @@ import ForgotPasswordPage from "./Pages/ForgotPassword/ForgotPassword";
 import ResetPasswordPage from "./Pages/ResetPassword/ResetPassword";
 import VerifyEmailPage from "./Pages/VerifyEmail/VerifyEmail";
 import EmailVerificationResultPage from "./Pages/VerifyResponse/VerifyReponse";
+import GoogleAuthCallback from "./Pages/GoogleAuth/GoogleAuth";
 import {jwtDecode} from "jwt-decode";
 import { SERVER_URL } from "./config";
 
@@ -64,6 +65,7 @@ const App = () => {
   return (
     <Router>
       <Routes>
+        <Route path="/google-auth" element={<GoogleAuthCallback />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />

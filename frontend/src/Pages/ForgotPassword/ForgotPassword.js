@@ -5,21 +5,28 @@ import { useNavigate } from "react-router-dom";
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
   const [isDisabled, setIsDisabled] = useState(false);
+  const [message, setMessage] = useState(null); // Success/Error message
+  const [messageType, setMessageType] = useState(""); // "success" or "error"
   const navigate = useNavigate();
 
   const handleResetRequest = async () => {
     setIsDisabled(true); // Disable button after click
+    setMessage(null); // Clear previous messages
     try {
       const response = await axios.post("http://localhost:5000/api/auth/send-forgot-password-email", { email });
+
       if (response.data.isSuccess) {
-        alert("Reset link sent! Check your email.");
+        setMessage("A reset link has been sent to your email. Please check your inbox.");
+        setMessageType("success");
       } else {
-        alert("Failed to send reset link.");
+        setMessage("Failed to send reset link. Please try again.");
+        setMessageType("error");
         setIsDisabled(false); // Re-enable button if failed
       }
     } catch (error) {
       console.error("Reset request error", error);
-      alert("An error occurred.");
+      setMessage("An error occurred while sending the reset link. Please try again later.");
+      setMessageType("error");
       setIsDisabled(false);
     }
   };
@@ -37,6 +44,20 @@ const ForgotPasswordPage = () => {
       <button onClick={handleResetRequest} disabled={isDisabled}>
         Send Reset Link
       </button>
+
+      {/* Conditional Success/Error Messages */}
+      {message && (
+        <p
+          style={{
+            color: messageType === "success" ? "green" : "red",
+            fontWeight: "bold",
+            marginTop: "10px",
+          }}
+        >
+          {message}
+        </p>
+      )}
+
       <p>
         <span
           style={{ color: "blue", cursor: "pointer" }}

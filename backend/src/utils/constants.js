@@ -80,6 +80,7 @@ const getResetPasswordEmailHtml = (forgotPasswordToken) => {
         color: #333;
         line-height: 1.6;
         padding: 20px;
+        text-align: center;
       }
       h1 {
         color: #00457c;
@@ -87,27 +88,39 @@ const getResetPasswordEmailHtml = (forgotPasswordToken) => {
       p {
         font-size: 16px;
       }
-      .token {
-        font-size: 18px;
-        font-weight: bold;
-        background-color: #e8f0fe;
-        border-left: 5px solid #304ffe;
-        padding: 10px;
-        margin: 20px 0px;
-        word-wrap: break-word;
-      }
-      .info {
+      .reset-container {
         margin-top: 20px;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 5px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .reset-link {
+        display: inline-block;
+        background-color: #304ffe;
+        color: white;
+        text-decoration: none;
+        font-size: 18px;
+        padding: 10px 20px;
+        border-radius: 5px;
+        margin-top: 10px;
+      }
+      .reset-link:hover {
+        background-color: #002984;
       }
     </style>
   </head>
   <body>
     <h1>Reset Your Password</h1>
-    <p class="info">Please copy the following token and paste it inside the mobile application:</p>
-    <div class="token">${forgotPasswordToken}</div>
+    <p>If you requested a password reset, click the button below:</p>
+    <div class="reset-container">
+      <a href="http://localhost:3000/reset-password?token=${forgotPasswordToken}" class="reset-link">Reset Password</a>
+    </div>
+    <p>If you didn't request this, please ignore this email.</p>
   </body>
   </html>`;
 };
+
 
 const getGoogleAuthRedirectUrl = (response) => {
   const redirectUrl = `yourapp://callback?response=${encodeURIComponent(JSON.stringify(response))}`;

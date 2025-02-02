@@ -5,7 +5,7 @@ const { getGoogleAuthRedirectUrl } = require("../utils/constants");
 const {
   StatusCodes,
   AuthMessages,
-  GoogleMessages,
+  ResponseTypes,
 } = require("../responses/apiConstants");
 
 const login = async (req, res) => {
@@ -48,7 +48,7 @@ const googleCallback = async (req, res) => {
         message: "Authentication failed",
       };
       return res.redirect(
-        `${process.env.CLIENT_URL}/auth/callback?success=false&message=${encodeURIComponent(
+        `${process.env.CLIENT_URL}/google-auth?success=false&message=${encodeURIComponent(
           response.message
         )}`
       );
@@ -77,6 +77,7 @@ const googleCallback = async (req, res) => {
     );
   }
 };
+
 
 const logout = async (req, res) => {
   try {
