@@ -6,12 +6,9 @@ const {
   StatusCodes,
   EndpointNotFound,
 } = require("./src/responses/apiConstants");
-const passportConfig = require("./src/config/passportConfig");
+const passportGoogle = require("./src/config/passportGoogle");
 const userRoutes = require("./src/routes/userRoutes");
 const authRoutes = require("./src/routes/authRoutes");
-const conversationRoutes = require("./src/routes/conversationRoutes");
-const appointmentRoutes = require("./src/routes/appointmentRoutes");
-const staticRoutes = require("./src/routes/staticRoutes");
 const reportRoutes = require("./src/routes/reportRoutes");
 const speciesRoutes = require("./src/routes/speciesRoutes");
 const dataRoutes = require("./src/routes/dataRoutes");
@@ -26,7 +23,7 @@ app.use(cors());
 //middlewares
 app.use(express.json());
 app.use(express.static("./src/public"));
-app.use(passportConfig.initialize());
+app.use(passportGoogle.initialize());
 
 //routes
 app.get("/", (req, res) => {
@@ -37,17 +34,13 @@ app.get("/ping", (req, res) => {
 });
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", userRoutes);
-app.use("/api/conversations", conversationRoutes);
-app.use("/api/appointments", appointmentRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/species", speciesRoutes);
 app.use("/api/data", dataRoutes);
 app.use("/api/statistics", statisticsRoutes);
 app.use("/api/sparql", graphdbRoutes);
 
-app.use("/static", staticRoutes);
-
-// this middleware will be executed if no route is matched
+// this route will be executed if no route is matched
 app.use((req, res) => {
   ApiResponse.error(res, {
     statusCode: StatusCodes.NotFound,

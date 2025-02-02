@@ -1,150 +1,165 @@
-const axios = require('axios');
-const vision = require('@google-cloud/vision');
-const Species = require('../../models/speciesModel');
-const Report = require('../../models/reportModel');
+const axios = require("axios");
+const vision = require("@google-cloud/vision");
+const Species = require("../../models/speciesModel");
+const Report = require("../../models/reportModel");
 
 const FLICKR_API_KEY = process.env.FLICKR_API_KEY;
-const FLICKR_API_URL = 'https://www.flickr.com/services/rest/';
+const FLICKR_API_URL = "https://www.flickr.com/services/rest/";
 
 const client = new vision.ImageAnnotatorClient({
-    keyFilename: './circular-truck-448121-e0-6ea1d769100a.json',
+  keyFilename: "./circular-truck-448121-e0-6ea1d769100a.json",
 });
 
 async function getSearchTerms() {
-    const species = await Species.find();
-    return species.map(s => s.name);
+  const species = await Species.find();
+  return species.map((s) => s.name);
 }
 
 async function getMinDate() {
-    const latestReport = await Report.findOne().sort({ date: -1 });
-    if (latestReport) {
-        const nextDate = new Date(latestReport.date);
-        nextDate.setDate(nextDate.getDate() + 1);
-        return nextDate.toISOString().split('T')[0];
-    }
-    return '2024-02-01';
+  const latestReport = await Report.findOne().sort({ date: -1 });
+  if (latestReport) {
+    const nextDate = new Date(latestReport.date);
+    nextDate.setDate(nextDate.getDate() + 1);
+    return nextDate.toISOString().split("T")[0];
+  }
+  return "2024-02-01";
 }
 
-
 function getMaxDate() {
-    return new Date().toISOString().split('T')[0];
+  return new Date().toISOString().split("T")[0];
 }
 
 async function fetchPhotos(term, minDate, maxDate) {
-    let allPhotos = [];
-    //console.log('Fetching photos for', term);
-    for (let page = 1; page <= 1; page++) {
-        const response = await axios.get(FLICKR_API_URL, {
-            headers: {
-                'User-Agent': 'MigrationReportingTool/1.0',
-            },
-            params: {
-                method: 'flickr.photos.search',
-                api_key: FLICKR_API_KEY,
-                text: term,
-                min_taken_date: minDate,
-                max_taken_date: maxDate,
-                extras: 'description,geo,url_o,geo_is_public,date_taken,url_l,url_m,url_z',
-                format: 'json',
-                nojsoncallback: 1,
-                per_page: 500,
-                page: page,
-                sort: 'interestingness-desc',
-            },
-        });
+  let allPhotos = [];
+  //console.log('Fetching photos for', term);
+  for (let page = 1; page <= 1; page++) {
+    const response = await axios.get(FLICKR_API_URL, {
+      headers: {
+        "User-Agent": "MigrationReportingTool/1.0",
+      },
+      params: {
+        method: "flickr.photos.search",
+        api_key: FLICKR_API_KEY,
+        text: term,
+        min_taken_date: minDate,
+        max_taken_date: maxDate,
+        extras:
+          "description,geo,url_o,geo_is_public,date_taken,url_l,url_m,url_z",
+        format: "json",
+        nojsoncallback: 1,
+        per_page: 500,
+        page: page,
+        sort: "interestingness-desc",
+      },
+    });
 
-        const photos = response.data.photos.photo
-            .filter(photo => photo.geo_is_public === 1)
-            .map(photo => ({
-                id: photo.id,
-                title: photo.title,
-                date_taken: photo.datetaken,
-                latitude: photo.latitude,
-                longitude: photo.longitude,
-                description: photo.description || 'No description available',
-                image_url: photo.url_l || photo.url_z || photo.url_m || photo.url_o || 'No image available',
-                search_term: term,
-            }));
+    const photos = response.data.photos.photo
+      .filter((photo) => photo.geo_is_public === 1)
+      .map((photo) => ({
+        id: photo.id,
+        title: photo.title,
+        date_taken: photo.datetaken,
+        latitude: photo.latitude,
+        longitude: photo.longitude,
+        description: photo.description || "No description available",
+        image_url:
+          photo.url_l ||
+          photo.url_z ||
+          photo.url_m ||
+          photo.url_o ||
+          "No image available",
+        search_term: term,
+      }));
 
-        allPhotos = allPhotos.concat(photos);
-    }
-    return allPhotos;
+    allPhotos = allPhotos.concat(photos);
+  }
+  return allPhotos;
 }
 
 async function checkForBird(imageUri) {
-    try {
-        const [result] = await client.labelDetection(imageUri);
-        const labels = result.labelAnnotations;
-        return labels.some(label => label.description.toLowerCase() === 'bird');
-    } catch (error) {
-        console.error('Error using Vision API:', error.message);
-        return false;
-    }
+  try {
+    const [result] = await client.labelDetection(imageUri);
+    const labels = result.labelAnnotations;
+    return labels.some((label) => label.description.toLowerCase() === "bird");
+  } catch (error) {
+    console.error("Error using Vision API:", error.message);
+    return false;
+  }
 }
 
 async function getLocationData(lat, lon) {
-    const url = `https://api.bigdatacloud.net/data/reverse-geocode?latitude=${lat}&longitude=${lon}&localityLanguage=en&key=${process.env.BIGDATACLOUD_API_KEY}`;
-    try {
-        const response = await axios.get(url);
-        const data = response.data;
+  const url = `https://api.bigdatacloud.net/data/reverse-geocode?latitude=${lat}&longitude=${lon}&localityLanguage=en&key=${process.env.BIGDATACLOUD_API_KEY}`;
+  try {
+    const response = await axios.get(url);
+    const data = response.data;
 
-        if (data) {
-            return {
-                country: data.countryName || "Unknown",
-                continent: data.continent || "Unknown",
-            };
-        }
-    } catch (error) {
-        console.error("Error fetching geolocation data:", error.message);
+    if (data) {
+      return {
+        country: data.countryName || "Unknown",
+        continent: data.continent || "Unknown",
+      };
     }
-    return { country: "Unknown", continent: "Unknown" };
+  } catch (error) {
+    console.error("Error fetching geolocation data:", error.message);
+  }
+  return { country: "Unknown", continent: "Unknown" };
 }
 
 const truncate = (str, maxLength) => {
-    if (!str) return ''; 
-    return str.length > maxLength ? str.slice(0, maxLength) : str;
-  };
+  if (!str) return "";
+  return str.length > maxLength ? str.slice(0, maxLength) : str;
+};
 
 async function getData() {
-    const searchTerms = await getSearchTerms();
-    const minDate = await getMinDate();
-    const maxDate = getMaxDate();
-    
-    let allResults = [];
-    
-    for (const term of searchTerms) {
-        const photos = await fetchPhotos(term, minDate, maxDate);
-        const filteredPhotos = await Promise.all(
-            photos.map(async (photo) => {
-                const isBird = await checkForBird(photo.image_url);
-                return isBird ? photo : null;
-            })
-        );
+  const searchTerms = await getSearchTerms();
+  const minDate = await getMinDate();
+  const maxDate = getMaxDate();
 
-        allResults = allResults.concat(filteredPhotos.filter(photo => photo !== null));
-    }
+  let allResults = [];
 
-    const species = await Species.find();
-    const speciesMap = new Map();
-    species.forEach(s => speciesMap.set(s.name, s._id));
+  for (const term of searchTerms) {
+    const photos = await fetchPhotos(term, minDate, maxDate);
+    const filteredPhotos = await Promise.all(
+      photos.map(async (photo) => {
+        const isBird = await checkForBird(photo.image_url);
+        return isBird ? photo : null;
+      })
+    );
 
-    const reports = await Promise.all(allResults.map(async (photo) => {
-        const { country, continent } = await getLocationData(photo.latitude, photo.longitude);
-        return {
-            speciesId: speciesMap.get(photo.search_term),
-            date: new Date(photo.date_taken),
-            latitude: photo.latitude,
-            longitude: photo.longitude,
-            country,
-            continent,
-            description: truncate(photo.description?._content?.trim() || "No description provided", 500),
-            title: truncate(photo.title?.trim() || "Untitled", 100),
-            imageUrl: photo.image_url,
-        };
-    }));
+    allResults = allResults.concat(
+      filteredPhotos.filter((photo) => photo !== null)
+    );
+  }
 
-    await Report.insertMany(reports);
-    return reports;
+  const species = await Species.find();
+  const speciesMap = new Map();
+  species.forEach((s) => speciesMap.set(s.name, s._id));
+
+  const reports = await Promise.all(
+    allResults.map(async (photo) => {
+      const { country, continent } = await getLocationData(
+        photo.latitude,
+        photo.longitude
+      );
+      return {
+        speciesId: speciesMap.get(photo.search_term),
+        date: new Date(photo.date_taken),
+        latitude: photo.latitude,
+        longitude: photo.longitude,
+        country,
+        continent,
+        description: truncate(
+          photo.description?._content?.trim() || "No description provided",
+          500
+        ),
+        title: truncate(photo.title?.trim() || "Untitled", 100),
+        imageUrl: photo.image_url,
+      };
+    })
+  );
+
+  await Report.insertMany(reports);
+  return reports;
 }
 
 module.exports = { getData };

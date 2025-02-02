@@ -3,6 +3,7 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "./MapView.css";
+import {CLIENT_URL, SERVER_URL} from "./config"
 
 const DynamicIcon = ({ zoom }) => {
   const size = Math.max(15, zoom * 2);
@@ -24,7 +25,7 @@ const MapView = () => {
 
   const fetchSpecies = async () => {
     try {
-      const response = await fetch("http://localhost:5000/api/species");
+      const response = await fetch(`${SERVER_URL}/api/species`);
       if (!response.ok) {
         throw new Error("Failed to fetch species");
       }
@@ -62,7 +63,7 @@ const MapView = () => {
   const fetchReports = async () => {
     try {
       const response = await fetch(
-        `http://localhost:5000/api/reports?season=${season.toLowerCase()}${
+        `${SERVER_URL}/api/reports?season=${season.toLowerCase()}${
           species ? `&speciesId=${species}` : ""
         }`
       );

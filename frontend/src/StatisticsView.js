@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./StatisticsView.css";
 import { FaChartBar, FaList, FaClipboardList, FaDownload } from "react-icons/fa";
+import {CLIENT_URL, SERVER_URL} from "./config"
 
 const StatisticsView = () => {
   const [data, setData] = useState({
@@ -19,24 +20,24 @@ const StatisticsView = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const totalReportsRes = await fetch("http://localhost:5000/api/sparql/total-reports");
+        const totalReportsRes = await fetch(`${SERVER_URL}/api/sparql/total-reports`);
         const totalReportsData = await totalReportsRes.json();
 
-        const continentsRes = await fetch("http://localhost:5000/api/sparql/most-reported-continents");
+        const continentsRes = await fetch(`${SERVER_URL}/api/sparql/most-reported-continents`);
         const continentsData = await continentsRes.json();
 
-        const countriesRes = await fetch("http://localhost:5000/api/sparql/most-reported-countries");
+        const countriesRes = await fetch(`${SERVER_URL}/api/sparql/most-reported-countries`);
         const countriesData = await countriesRes.json();
 
         const seasons = ["spring", "summer", "autumn", "winter"];
         const seasonsData = {};
         for (const season of seasons) {
-          const seasonRes = await fetch(`http://localhost:5000/api/sparql/report-by-season/${season}`);
+          const seasonRes = await fetch(`${SERVER_URL}/api/sparql/report-by-season/${season}`);
           const seasonData = await seasonRes.json();
           seasonsData[season] = seasonData.data.count;
         }
 
-        const speciesRes = await fetch("http://localhost:5000/api/sparql/top-reported-species");
+        const speciesRes = await fetch(`${SERVER_URL}/api/sparql/top-reported-species`);
         const speciesData = await speciesRes.json();
 
         setData({
@@ -58,7 +59,7 @@ const StatisticsView = () => {
   const handleCustomQuery = async () => {
     try {
       const encodedQuery = encodeURIComponent(customQuery);
-      const response = await fetch(`http://localhost:5000/api/sparql/custom-query?query=${encodedQuery}`);
+      const response = await fetch(`${SERVER_URL}/api/sparql/custom-query?query=${encodedQuery}`);
 
       if (!response.ok) {
         throw new Error("Failed to fetch query results");

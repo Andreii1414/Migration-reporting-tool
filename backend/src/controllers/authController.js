@@ -1,11 +1,10 @@
 require("dotenv").config();
 const ApiResponse = require("../responses/apiResponse");
 const authService = require("../services/internal/authService");
-const { getGoogleAuthRedirectUrl } = require("../utils/constants");
 const {
   StatusCodes,
   AuthMessages,
-  GoogleMessages,
+  ResponseTypes,
 } = require("../responses/apiConstants");
 
 const login = async (req, res) => {
@@ -26,8 +25,8 @@ const login = async (req, res) => {
 
 const register = async (req, res) => {
   try {
-    const { firstName, lastName, email, password, confirmPassword } = req.body;
-    const payload = { firstName, lastName, email, password, confirmPassword };
+    const { userName, email, password, confirmPassword } = req.body;
+    const payload = { userName, email, password, confirmPassword };
 
     const result = await authService.register(payload);
     ApiResponse.handleResponse(res, result);
@@ -45,30 +44,36 @@ const googleCallback = async (req, res) => {
     if (req.user.isSuccess !== undefined) {
       const response = {
         isSuccess: false,
-        message: "Server error",
-        apiResponseCode: 2,
-        error: GoogleMessages.AuthFailed,
+        message: "Authentication failed",
       };
-      const responsePage = getGoogleAuthRedirectUrl(response);
-      res.send(responsePage);
-    } else {
-      const { _id, firstName, lastName } = req.user;
-      const payload = { _id, firstName, lastName };
+      return res.redirect(
+        `${process.env.CLIENT_URL}/google-auth?success=false&message=${encodeURIComponent(
+          response.message
+        )}`
+      );
+    }
 
-      const result = await authService.handleGoogleCallback(payload);
-      const responsePage = getGoogleAuthRedirectUrl(result);
-      res.send(responsePage);
+    const { _id, userName, email, verified } = req.user;
+    const payload = { _id, userName, email, verified };
+
+    const result = await authService.handleGoogleCallback(payload);
+
+    if (result.type === ResponseTypes.Success) {
+      return res.redirect(
+        `${process.env.CLIENT_URL}/google-auth?success=true&token=${result.data.token}&refreshToken=${result.data.refreshToken}`
+      );
+    } else {
+      return res.redirect(
+        `${process.env.CLIENT_URL}/google-auth?success=false&message=${encodeURIComponent(
+          result.error
+        )}`
+      );
     }
   } catch (error) {
     console.error("Google authentication error.", error);
-    const response = {
-      isSuccess: false,
-      message: "Server error",
-      apiResponseCode: 2,
-      error: GoogleMessages.Error,
-    };
-    const responsePage = getGoogleAuthRedirectUrl(response);
-    res.send(responsePage);
+    return res.redirect(
+      `${process.env.CLIENT_URL}/google-auth?success=false&message=Server error`
+    );
   }
 };
 
@@ -125,9 +130,13 @@ const verifyEmail = async (req, res) => {
     const result = await authService.verifyEmail(verificationToken);
 
     if (result.type === "success") {
-      res.redirect("/email-verification-succes.html");
+      res.redirect(
+        `${process.env.CLIENT_URL}/verify-email-result?success=true`
+      );
     } else {
-      res.redirect("/email-verification-failure.html");
+      res.redirect(
+        `${process.env.CLIENT_URL}/verify-email-result?success=false`
+      );
     }
   } catch (error) {
     console.log(error);

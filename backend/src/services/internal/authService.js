@@ -55,8 +55,9 @@ const login = async (payload) => {
 
     const tokenPayload = {
       userId: user._id,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      email: user.email,
+      userName: user.userName,
+      verified: user.verified,
     };
 
     const token = createJwtToken(
@@ -91,6 +92,10 @@ const login = async (payload) => {
       };
     }
 
+    if (user.verified === false) {
+      const sendVerificationResult = await sendVerificationEmail(user.email);
+    }
+
     return {
       type: ResponseTypes.Success,
       status: StatusCodes.Ok,
@@ -112,7 +117,7 @@ const login = async (payload) => {
 
 const register = async (payload) => {
   try {
-    const { firstName, lastName, email, password } = payload;
+    const { userName, email, password } = payload;
     const userExists = await User.findOne({
       email: email.toLowerCase(),
     }).exec();
@@ -126,16 +131,16 @@ const register = async (payload) => {
     }
 
     const user = new User({
-      firstName,
-      lastName,
+      userName,
       email: email.toLowerCase(),
       passwordHash: password,
     });
 
     const tokenPayload = {
       userId: user._id,
-      firstName: user.firstName,
-      lastName: user.lastName,
+      email: user.email,
+      userName: user.userName,
+      verified: user.verified,
     };
 
     const token = createJwtToken(
@@ -196,11 +201,12 @@ const register = async (payload) => {
 
 const handleGoogleCallback = async (payload) => {
   try {
-    const { _id, firstName, lastName } = payload;
+    const { _id, userName, email, verified } = payload;
     const tokenPayload = {
       userId: _id,
-      firstName: firstName,
-      lastName: lastName,
+      email,
+      userName,
+      verified,
     };
 
     const token = createJwtToken(
@@ -216,10 +222,9 @@ const handleGoogleCallback = async (payload) => {
 
     if (!token || !refreshToken) {
       return {
-        isSuccess: false,
-        message: "Server error",
-        apiResponseCode: 2,
-        error: TokenMessages.TokenCreationError,
+        type: ResponseTypes.Error,
+        status: StatusCodes.InternalServerError,
+        error: "Google authentication error.",
       };
     }
 
@@ -230,18 +235,17 @@ const handleGoogleCallback = async (payload) => {
 
     if (!saveRefreshToken) {
       return {
-        isSuccess: false,
-        message: "Server error",
-        apiResponseCode: 2,
-        error: TokenMessages.FailedSavingToken,
+        type: ResponseTypes.Error,
+        status: StatusCodes.InternalServerError,
+        error: "Google authentication error.",
       };
     }
 
     return {
-      isSuccess: true,
-      apiResponseCode: 1,
+      type: ResponseTypes.Success,
+      status: StatusCodes.Ok,
       data: {
-        message: GoogleMessages.Success,
+        message: "Google authentication success.",
         token,
         refreshToken,
       },
@@ -249,10 +253,9 @@ const handleGoogleCallback = async (payload) => {
   } catch (error) {
     console.error("Google authentication service error.", error);
     return {
-      isSuccess: false,
-      message: "Server error",
-      apiResponseCode: 2,
-      error: GoogleMessages.Error,
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: "Google authentication error.",
     };
   }
 };
@@ -317,8 +320,9 @@ const getAccessToken = async (userId, refreshToken) => {
 
     const newAccessTokenPayload = {
       userId: extracted.userId,
-      firstName: extracted.firstName,
-      lastName: extracted.lastName,
+      userName: extracted.userName,
+      email: extracted.email,
+      verified: extracted.verified,
     };
 
     const newAccessToken = createJwtToken(
@@ -376,6 +380,7 @@ const sendVerificationEmail = async (email) => {
     const tokenPayload = {
       userId: user._id,
       email: user.email.toLowerCase(),
+      userName: user.userName,
     };
 
     const verificationToken = createJwtToken(

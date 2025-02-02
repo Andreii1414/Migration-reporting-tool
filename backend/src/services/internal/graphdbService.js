@@ -1,9 +1,11 @@
 const fetch = require("node-fetch");
-const {
-  convertToTurtle
-} = require("../../utils/turtleConverter");
+const { convertToTurtle } = require("../../utils/turtleConverter");
 const Report = require("../../models/reportModel");
-const { ResponseTypes, StatusCodes, ErrorMessages } = require("../../responses/apiConstants");
+const {
+  ResponseTypes,
+  StatusCodes,
+  ErrorMessages,
+} = require("../../responses/apiConstants");
 
 const GRAPHDB_ENDPOINT = process.env.GRAPHDB_ENDPOINT;
 
@@ -30,9 +32,7 @@ async function sendReportsToGraphDB() {
 
 async function clearGraphDB(graphName = null) {
   try {
-    const query = graphName ?
-      `CLEAR GRAPH <${graphName}>` :
-      `CLEAR ALL`;
+    const query = graphName ? `CLEAR GRAPH <${graphName}>` : `CLEAR ALL`;
 
     const response = await fetch(GRAPHDB_ENDPOINT, {
       method: "POST",
@@ -47,9 +47,9 @@ async function clearGraphDB(graphName = null) {
     }
 
     console.log(
-      graphName ?
-      `Graph <${graphName}> has been cleared successfully!` :
-      "All graphs in the GraphDB have been cleared successfully!"
+      graphName
+        ? `Graph <${graphName}> has been cleared successfully!`
+        : "All graphs in the GraphDB have been cleared successfully!"
     );
   } catch (error) {
     console.error("Failed to clear GraphDB:", error);
@@ -63,8 +63,8 @@ async function executeSPARQLQuery(query) {
     const response = await fetch(SPARQL_ENDPOINT, {
       method: "POST",
       headers: {
-        'Accept': 'application/sparql-results+json',
-        'Content-Type': 'application/sparql-query',
+        Accept: "application/sparql-results+json",
+        "Content-Type": "application/sparql-query",
       },
       body: query,
     });
@@ -82,33 +82,33 @@ async function executeSPARQLQuery(query) {
 }
 
 async function getTotalReports() {
-    const query = `
+  const query = `
         PREFIX ex: <http://example.org/>
         SELECT (COUNT(?report) AS ?totalReports)
         WHERE {
             ?report a ex:Report .
         }
     `;
-    try {
-        const result = await executeSPARQLQuery(query);
-        const totalReports = parseInt(result[0].totalReports.value, 10);
+  try {
+    const result = await executeSPARQLQuery(query);
+    const totalReports = parseInt(result[0].totalReports.value, 10);
 
-        return {
-            type: ResponseTypes.Success,
-            status: StatusCodes.OK,
-            data: totalReports,
-        };
-    } catch (error) {
-        return {
-            type: ResponseTypes.Error,
-            status: StatusCodes.InternalServerError,
-            error: ErrorMessages.UnexpectedErrorFetch,
-        };
-    }
-};
+    return {
+      type: ResponseTypes.Success,
+      status: StatusCodes.OK,
+      data: totalReports,
+    };
+  } catch (error) {
+    return {
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedErrorFetch,
+    };
+  }
+}
 
 const getMostReportedContinents = async () => {
-    const query = `
+  const query = `
         PREFIX ex: <http://example.org/>
         SELECT ?continent (COUNT(?report) AS ?count)
         WHERE {
@@ -119,29 +119,29 @@ const getMostReportedContinents = async () => {
         ORDER BY DESC(?count)
         LIMIT 7
     `;
-    try {
-        const result = await executeSPARQLQuery(query);
-        const continents = result.map((binding) => ({
-            continent: binding.continent.value,
-            count: parseInt(binding.count.value, 10),
-        }));
+  try {
+    const result = await executeSPARQLQuery(query);
+    const continents = result.map((binding) => ({
+      continent: binding.continent.value,
+      count: parseInt(binding.count.value, 10),
+    }));
 
-        return {
-            type: ResponseTypes.Success,
-            status: StatusCodes.OK,
-            data: continents,
-        };
-    } catch (error) {
-        return {
-            type: ResponseTypes.Error,
-            status: StatusCodes.InternalServerError,
-            error: ErrorMessages.UnexpectedErrorFetch,
-        };
-    }
+    return {
+      type: ResponseTypes.Success,
+      status: StatusCodes.OK,
+      data: continents,
+    };
+  } catch (error) {
+    return {
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedErrorFetch,
+    };
+  }
 };
 
 const getMostReportedCountries = async () => {
-    const query = `
+  const query = `
         PREFIX ex: <http://example.org/>
         SELECT ?country (COUNT(?report) AS ?count)
         WHERE {
@@ -152,38 +152,40 @@ const getMostReportedCountries = async () => {
         ORDER BY DESC(?count)
         LIMIT 10
     `;
-    try {
-        const result = await executeSPARQLQuery(query);
-        const countries = result.map((binding) => ({
-            country: binding.country.value,
-            count: parseInt(binding.count.value, 10),
-        }));
+  try {
+    const result = await executeSPARQLQuery(query);
+    const countries = result.map((binding) => ({
+      country: binding.country.value,
+      count: parseInt(binding.count.value, 10),
+    }));
 
-        return {
-            type: ResponseTypes.Success,
-            status: StatusCodes.OK,
-            data: countries,
-        };
-    } catch (error) {
-        return {
-            type: ResponseTypes.Error,
-            status: StatusCodes.InternalServerError,
-            error: ErrorMessages.UnexpectedErrorFetch,
-        };
-    }
+    return {
+      type: ResponseTypes.Success,
+      status: StatusCodes.OK,
+      data: countries,
+    };
+  } catch (error) {
+    return {
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedErrorFetch,
+    };
+  }
 };
 
 const getReportsBySeason = async (season) => {
-    const seasonToMonths = {
-        spring: [3, 4, 5],
-        summer: [6, 7, 8],
-        autumn: [9, 10, 11],
-        winter: [12, 1, 2],
-    };
+  const seasonToMonths = {
+    spring: [3, 4, 5],
+    summer: [6, 7, 8],
+    autumn: [9, 10, 11],
+    winter: [12, 1, 2],
+  };
 
-    const months = seasonToMonths[season].map((m) => `"${m}"^^<http://www.w3.org/2001/XMLSchema#integer>`).join(", ");
+  const months = seasonToMonths[season]
+    .map((m) => `"${m}"^^<http://www.w3.org/2001/XMLSchema#integer>`)
+    .join(", ");
 
-    const query = `
+  const query = `
         PREFIX ex: <http://example.org/>
         SELECT (COUNT(?report) AS ?count)
         WHERE {
@@ -193,26 +195,26 @@ const getReportsBySeason = async (season) => {
             FILTER(?month IN (${months}))
         }
     `;
-    try {
-        const result = await executeSPARQLQuery(query);
-        const count = parseInt(result[0].count.value, 10);
+  try {
+    const result = await executeSPARQLQuery(query);
+    const count = parseInt(result[0].count.value, 10);
 
-        return {
-            type: ResponseTypes.Success,
-            status: StatusCodes.OK,
-            data: { season, count },
-        };
-    } catch (error) {
-        return {
-            type: ResponseTypes.Error,
-            status: StatusCodes.InternalServerError,
-            error: ErrorMessages.UnexpectedErrorFetch,
-        };
-    }
+    return {
+      type: ResponseTypes.Success,
+      status: StatusCodes.OK,
+      data: { season, count },
+    };
+  } catch (error) {
+    return {
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedErrorFetch,
+    };
+  }
 };
 
 const getTopReportedSpecies = async () => {
-    const query = `
+  const query = `
         PREFIX ex: <http://example.org/>
         SELECT ?species (COUNT(?report) AS ?count)
         WHERE {
@@ -223,45 +225,43 @@ const getTopReportedSpecies = async () => {
         ORDER BY DESC(?count)
         LIMIT 5
     `;
-    try {
-        const result = await executeSPARQLQuery(query);
-        const species = result.map((binding) => ({
-            species: binding.species.value,
-            count: parseInt(binding.count.value, 10),
-        }));
+  try {
+    const result = await executeSPARQLQuery(query);
+    const species = result.map((binding) => ({
+      species: binding.species.value,
+      count: parseInt(binding.count.value, 10),
+    }));
 
-        return {
-            type: ResponseTypes.Success,
-            status: StatusCodes.OK,
-            data: species,
-        };
-    } catch (error) {
-        return {
-            type: ResponseTypes.Error,
-            status: StatusCodes.InternalServerError,
-            error: ErrorMessages.UnexpectedErrorFetch,
-        };
-    }
+    return {
+      type: ResponseTypes.Success,
+      status: StatusCodes.OK,
+      data: species,
+    };
+  } catch (error) {
+    return {
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedErrorFetch,
+    };
+  }
 };
 
 async function customQuery(query) {
-    try {
-        const result = await executeSPARQLQuery(query);
-        return {
-            type: ResponseTypes.Success,
-            status: StatusCodes.OK,
-            data: result,
-        };
-    } catch (error) {
-        return {
-            type: ResponseTypes.Error,
-            status: StatusCodes.InternalServerError,
-            error: ErrorMessages.UnexpectedErrorFetch,
-        };
-    }
+  try {
+    const result = await executeSPARQLQuery(query);
+    return {
+      type: ResponseTypes.Success,
+      status: StatusCodes.OK,
+      data: result,
+    };
+  } catch (error) {
+    return {
+      type: ResponseTypes.Error,
+      status: StatusCodes.InternalServerError,
+      error: ErrorMessages.UnexpectedErrorFetch,
+    };
+  }
 }
-
-
 
 module.exports = {
   sendReportsToGraphDB,

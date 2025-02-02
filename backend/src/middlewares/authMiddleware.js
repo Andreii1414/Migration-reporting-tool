@@ -89,22 +89,10 @@ const checkForgotPasswordToken = (req, res, next) => {
   if (checkResult) next();
 };
 
-const checkWorkerToken = (req, res, next) => {
-  const { workerToken } = req.body;
-  const checkResult = checkToken(
-    req,
-    res,
-    workerToken,
-    process.env.WORKER_TOKEN_SECRET,
-    "worker validation token"
-  );
-  if (checkResult) next();
-};
 
 module.exports = {
   checkAccessToken,
   checkRefreshToken,
   checkEmailVerificationToken,
   checkForgotPasswordToken,
-  checkWorkerToken,
 };
