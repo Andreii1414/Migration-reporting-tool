@@ -56,22 +56,6 @@ router.post("/token", checkRefreshToken, authController.getAccessToken);
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 router.post(
   "/send-verification-email",
   checkAccessToken,
@@ -83,6 +67,21 @@ router.get(
   checkEmailVerificationToken,
   authController.verifyEmail
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 router.post(
   "/change-password",

@@ -24,7 +24,7 @@ const getAzureBlobSasUrl = (blobUrl) => {
 };
 
 const getVerificationUrl = (token) => {
-  const verificationUrl = `http://192.168.100.7:3000/api/auth/verify-email?token=${token}`;
+  const verificationUrl = `http://localhost:5000/api/auth/verify-email?token=${token}`;
   return verificationUrl;
 };
 

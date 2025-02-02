@@ -41,49 +41,42 @@ const register = async (req, res) => {
 };
 
 const googleCallback = async (req, res) => {
-  console.log("Google callback");
-  console.log(req.user);
   try {
     if (req.user.isSuccess !== undefined) {
       const response = {
         isSuccess: false,
-        message: "Server error",
-        apiResponseCode: 2,
-        error: GoogleMessages.AuthFailed,
+        message: "Authentication failed",
       };
-      const responsePage = getGoogleAuthRedirectUrl(response);
-      res.send(responsePage);
-    } else {
-      const { _id, firstName, lastName } = req.user;
-      const payload = { _id, firstName, lastName };
+      return res.redirect(
+        `${process.env.CLIENT_URL}/auth/callback?success=false&message=${encodeURIComponent(
+          response.message
+        )}`
+      );
+    }
 
-      const result = await authService.handleGoogleCallback(payload);
-      const responsePage = getGoogleAuthRedirectUrl(result);
-      res.send(responsePage);
+    const { _id, userName, email, verified } = req.user;
+    const payload = { _id, userName, email, verified };
+
+    const result = await authService.handleGoogleCallback(payload);
+
+    if (result.type === ResponseTypes.Success) {
+      return res.redirect(
+        `${process.env.CLIENT_URL}/google-auth?success=true&token=${result.data.token}&refreshToken=${result.data.refreshToken}`
+      );
+    } else {
+      return res.redirect(
+        `${process.env.CLIENT_URL}/google-auth?success=false&message=${encodeURIComponent(
+          result.error
+        )}`
+      );
     }
   } catch (error) {
     console.error("Google authentication error.", error);
-    const response = {
-      isSuccess: false,
-      message: "Server error",
-      apiResponseCode: 2,
-      error: GoogleMessages.Error,
-    };
-    const responsePage = getGoogleAuthRedirectUrl(response);
-    res.send(responsePage);
+    return res.redirect(
+      `${process.env.CLIENT_URL}/google-auth?success=false&message=Server error`
+    );
   }
 };
-
-
-
-
-
-
-
-
-
-
-
 
 const logout = async (req, res) => {
   try {
@@ -117,31 +110,6 @@ const getAccessToken = async (req, res) => {
   }
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 const sendVerificationEmail = async (req, res) => {
   try {
     const email = req.body.email;
@@ -163,9 +131,9 @@ const verifyEmail = async (req, res) => {
     const result = await authService.verifyEmail(verificationToken);
 
     if (result.type === "success") {
-      res.redirect("/email-verification-succes.html");
+      res.redirect("http://localhost:3000/verify-email-result?success=true");
     } else {
-      res.redirect("/email-verification-failure.html");
+      res.redirect("http://localhost:3000/verify-email-result?success=false");
     }
   } catch (error) {
     console.log(error);
@@ -175,6 +143,28 @@ const verifyEmail = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const changePassword = async (req, res) => {
   try {
