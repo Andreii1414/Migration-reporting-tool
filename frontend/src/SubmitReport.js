@@ -84,8 +84,15 @@ const SubmitReport = () => {
         return;
       }
 
+      const data = new FormData();
+      data.append("file", image);
+      data.append("upload_preset", uploadPreset);
+
       const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`);
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,{
+          method: "POST",
+          body: data,
+        });
 
       const result = await response.json();
       if (result.secure_url) {
@@ -140,11 +147,9 @@ const SubmitReport = () => {
 
       const response = await fetch(`${SERVER_URL}/api/reports/`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
         body: JSON.stringify(reportData),
         headers: {
+          "Content-Type": "application/json",
           ...authHeader,
         },
       });
