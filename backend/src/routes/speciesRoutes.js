@@ -6,7 +6,7 @@ const speciesController = require('../controllers/speciesController');
 const { restrictAccess } = require('../middlewares/internalAccess');
 
 const router = express.Router();
-//router.use(checkAccessToken);
+router.use(checkAccessToken);
 
 router.get('/', speciesController.getSpecies);
 router.get('/:id', validateParamId, speciesController.getSpeciesById);

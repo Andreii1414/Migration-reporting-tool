@@ -60,8 +60,8 @@ const changePasswordValidator = (req, res, next) => {
 
 const resetPasswordSchema = Joi.object({
   forgotPasswordToken: Joi.string().required(),
-  password: Joi.string().min(7).required(),
-  confirmPassword: Joi.string().min(7).required().valid(Joi.ref("password")),
+  password: Joi.string().min(5).required(),
+  confirmPassword: Joi.string().min(5).required().valid(Joi.ref("password")),
 }).unknown(false);
 
 const resetPasswordValidator = (req, res, next) => {

@@ -6,7 +6,7 @@ const reportController = require('../controllers/reportController');
 const {restrictAccess} = require('../middlewares/internalAccess');
 
 const router = express.Router();
-//router.use(checkAccessToken);
+router.use(checkAccessToken);
 
 router.post('/', createReportValidator, reportController.createReport);
 router.get('/', reportController.getReportsBySeasonAndSpecies);

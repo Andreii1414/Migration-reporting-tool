@@ -4,7 +4,7 @@ const { checkAccessToken } = require('../middlewares/authMiddleware');
 const { restrictAccess } = require('../middlewares/internalAccess');
 
 const router = express.Router();
-//router.use(checkAccessToken);
+router.use(checkAccessToken);
 
 router.get('/',restrictAccess, dataController.getData);
 

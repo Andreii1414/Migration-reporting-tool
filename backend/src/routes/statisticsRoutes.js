@@ -4,7 +4,7 @@ const { validateParamId } = require('../middlewares/mongooseMiddleware');
 const statisticsController = require('../controllers/statisticsController');
 
 const router = express.Router();
-//router.use(checkAccessToken);
+router.use(checkAccessToken);
 
 router.get('/total-reports', statisticsController.getTotalReports);
 router.get('/most-reported-continents', statisticsController.getMostReportedContinents);

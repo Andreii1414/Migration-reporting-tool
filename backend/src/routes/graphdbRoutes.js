@@ -4,7 +4,7 @@ const { checkAccessToken } = require('../middlewares/authMiddleware');
 const { validateParamId } = require('../middlewares/mongooseMiddleware');
 
 const router = express.Router();
-//router.use(checkAccessToken);
+router.use(checkAccessToken);
 
 router.get('/total-reports', graphdbController.getTotalReports);
 router.get('/most-reported-continents', graphdbController.getMostReportedContinents);
