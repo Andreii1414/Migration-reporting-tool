@@ -1,7 +1,7 @@
 const Report = require('../../models/reportModel');
 const { ResponseTypes, StatusCodes, ErrorMessages } = require('../../responses/apiConstants');
 const axios = require('axios');
-const { sendReportsToGraphDB, clearGraphDB } = require('./graphDBService');
+const { sendReportsToGraphDB, clearGraphDB } = require('../internal/graphdbService')
 
 async function getLocationData(lat, lon) {
     const url = `https://api.bigdatacloud.net/data/reverse-geocode?latitude=${lat}&longitude=${lon}&localityLanguage=en&key=${process.env.BIGDATACLOUD_API_KEY}`;

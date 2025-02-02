@@ -182,18 +182,20 @@ const StatisticsView = () => {
   const rdfDataExample =`
     @prefix ex: <http://example.org/> .
     @prefix xsd: <http://www.w3.org/2001/XMLSchema#>
+    @prefix wd: <https://www.wikidata.org/wiki/> .
 
     ex:report6795fe2c11f84dd7768b8a49 a ex:Report ;
         ex:title "Dalmatian pelican" ;
         ex:date "2025-01-24T13:25:18.000Z"^^xsd:dateTime ;
         ex:species ex:species6795354de4ff5eea0eb695fe ;
         ex:speciesName "pelicans";
+        ex:speciesWikidata "wd:https://www.wikidata.org/wiki/Q11846678";
         ex:description "Dalmatian pelican in Lake Kerkini" ;
         ex:imageUrl "www.example.com" ;
         ex:latitude "41.165473"^^xsd:float ;
         ex:longitude "23.203811"^^xsd:float ;
-        ex:continent "Europe" ;
-        ex:country "Greece" .
+        ex:continent "http://dbpedia.org/resource/Europe" ;
+        ex:country "http://dbpedia.org/resource/Greece" .
 
 
     ex:report6795fe2c11f84dd7768b8a2b a ex:Report ;
@@ -201,12 +203,13 @@ const StatisticsView = () => {
         ex:date "2025-01-25T06:31:54.000Z"^^xsd:dateTime ;
         ex:species ex:species679534d4e4ff5eea0eb695f8 ;
         ex:speciesName "ducks";
+        ex:speciesWikidata "wd:https://www.wikidata.org/wiki/Q3736439";
         ex:description "Australian wood ducks" ;
         ex:imageUrl "www.example.com" ;
         ex:latitude "-34.409441"^^xsd:float ;
         ex:longitude "150.898879"^^xsd:float ;
-        ex:continent "Australian continent" ;
-        ex:country "Australia" .`
+        ex:continent "http://dbpedia.org/resource/Australia_(Continent)" ;
+        ex:country "http://dbpedia.org/resource/Australia" .`
 
   return (
     <div className="statistics-container">
@@ -231,7 +234,7 @@ const StatisticsView = () => {
             {data.mostReportedContinents.map(({ continent, count }, index) => (
               <li key={continent}>
                 <span>{index + 1}. </span>
-                <strong>{continent}:</strong> {count} reports
+                <strong>{continent.split('/').pop().replace(/_/g, ' ')}:</strong> {count} reports
               </li>
             ))}
           </ul>
@@ -247,7 +250,7 @@ const StatisticsView = () => {
             {data.mostReportedCountries.map(({ country, count }, index) => (
               <li key={country}>
                 <span>{index + 1}. </span>
-                <strong>{country}:</strong> {count} reports
+                <strong>{country.split('/').pop().replace(/_/g, ' ')}:</strong> {count} reports
               </li>
             ))}
           </ul>

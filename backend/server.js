@@ -43,8 +43,8 @@ const startServer = async () => {
       console.log(`Server is running on http://${HOST}:${PORT}`);
     });
 
-    // await clearGraphDB();
-    // await sendReportsToGraphDB();
+    //await clearGraphDB();
+    //await sendReportsToGraphDB();
 
   }
   catch (err) {
