@@ -284,7 +284,7 @@ const StatisticsView = () => {
           sparqlQuery={topReportedSpeciesQuery} 
           value={
             <>
-              One of the most commonly reported species is the <strong>{name}</strong>, with <strong>{count}</strong> observations.
+              One of the most commonly reported species is the <strong>${name}</strong>, with <strong>{count}</strong> observations.
             </>
           }
         />
