@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import {CLIENT_URL, SERVER_URL} from "../../config";
 
 const ForgotPasswordPage = () => {
   const [email, setEmail] = useState("");
@@ -13,7 +14,7 @@ const ForgotPasswordPage = () => {
     setIsDisabled(true); // Disable button after click
     setMessage(null); // Clear previous messages
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/send-forgot-password-email", { email });
+      const response = await axios.post(`${SERVER_URL}/api/auth/send-forgot-password-email`, { email });
 
       if (response.data.isSuccess) {
         setMessage("A reset link has been sent to your email. Please check your inbox.");
@@ -45,7 +46,6 @@ const ForgotPasswordPage = () => {
         Send Reset Link
       </button>
 
-      {/* Conditional Success/Error Messages */}
       {message && (
         <p
           style={{

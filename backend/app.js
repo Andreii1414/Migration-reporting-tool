@@ -40,7 +40,7 @@ app.use("/api/data", dataRoutes);
 app.use("/api/statistics", statisticsRoutes);
 app.use("/api/sparql", graphdbRoutes);
 
-// this middleware will be executed if no route is matched
+// this route will be executed if no route is matched
 app.use((req, res) => {
   ApiResponse.error(res, {
     statusCode: StatusCodes.NotFound,

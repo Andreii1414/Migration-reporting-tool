@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import axios from "axios";
+import {CLIENT_URL, SERVER_URL} from "../../config";
 
 const ResetPasswordPage = () => {
   const [password, setPassword] = useState("");
@@ -29,7 +30,7 @@ const ResetPasswordPage = () => {
     const forgotPasswordToken = searchParams.get("token"); // Get token from URL
 
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/reset-password", {
+      const response = await axios.post(`${SERVER_URL}/api/auth/reset-password`, {
         forgotPasswordToken, // Token from the URL
         password,
         confirmPassword,

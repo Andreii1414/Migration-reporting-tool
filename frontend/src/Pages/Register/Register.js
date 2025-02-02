@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import {CLIENT_URL, SERVER_URL} from "../../config";
 
 const RegisterPage = () => {
   const [email, setEmail] = useState("");
@@ -12,7 +13,7 @@ const RegisterPage = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/register", {
+      const response = await axios.post(`${SERVER_URL}/api/auth/register`, {
         userName,
         email,
         password,
@@ -31,7 +32,7 @@ const RegisterPage = () => {
   };
 
   const handleGoogleAuth = () => {
-    window.location.href = "http://localhost:5000/api/auth/google";
+    window.location.href = `${SERVER_URL}/api/auth/google`;
   };
 
   return (

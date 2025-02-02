@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import "./SubmitReport.css";
+import {CLIENT_URL, SERVER_URL} from "./config"
 
 const SubmitReport = () => {
   const [title, setTitle] = useState("");
@@ -15,7 +16,7 @@ const SubmitReport = () => {
   useEffect(() => {
     const fetchSpecies = async () => {
       try {
-        const response = await fetch("http://localhost:5000/api/species");
+        const response = await fetch(`${SERVER_URL}/api/species`);
         if (!response.ok) {
           throw new Error("Failed to fetch species");
         }
@@ -128,7 +129,7 @@ const SubmitReport = () => {
     console.log("Submitting report: ", JSON.stringify(reportData));
 
     try {
-      const response = await fetch("http://localhost:5000/api/reports/", {
+      const response = await fetch(`${SERVER_URL}/api/reports/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

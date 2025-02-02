@@ -11,7 +11,7 @@ import VerifyEmailPage from "./Pages/VerifyEmail/VerifyEmail";
 import EmailVerificationResultPage from "./Pages/VerifyResponse/VerifyReponse";
 import GoogleAuthCallback from "./Pages/GoogleAuth/GoogleAuth";
 import {jwtDecode} from "jwt-decode";
-import { SERVER_URL } from "./config";
+import {CLIENT_URL, SERVER_URL} from "./config"
 
 const ProtectedRoute = ({ children }) => {
   const navigate = useNavigate();
@@ -29,7 +29,7 @@ const ProtectedRoute = ({ children }) => {
       }
 
       try {
-        const response = await axios.post("http://localhost:5000/api/auth/token", {
+        const response = await axios.post(`${SERVER_URL}/api/auth/token`, {
           refreshToken,
         });
 

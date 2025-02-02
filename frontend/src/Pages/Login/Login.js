@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { jwtDecode } from "jwt-decode"; 
+import {CLIENT_URL, SERVER_URL} from "../../config";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -11,7 +12,7 @@ const LoginPage = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", {
+      const response = await axios.post(`${SERVER_URL}/api/auth/login`, {
         email,
         password,
       });
@@ -43,7 +44,7 @@ const LoginPage = () => {
   };
 
   const handleGoogleAuth = () => {
-    window.location.href = "http://localhost:5000/api/auth/google";
+    window.location.href = `${SERVER_URL}/api/auth/google`;
   };
 
   return (
