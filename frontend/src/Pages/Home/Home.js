@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode"; // Import JWT decoder
+import { jwtDecode } from "jwt-decode";
 import MapView from "../../MapView";
 import StatisticsView from "../../StatisticsView";
 import SubmitReport from "../../SubmitReport";

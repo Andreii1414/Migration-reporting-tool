@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import {CLIENT_URL, SERVER_URL} from "../../config";
+import { CLIENT_URL, SERVER_URL } from "../../config";
 
 const RegisterPage = () => {
   const [email, setEmail] = useState("");
@@ -36,48 +36,122 @@ const RegisterPage = () => {
   };
 
   return (
-    <div>
-      <h2>Register</h2>
-      <form onSubmit={handleRegister}>
-        <input
-          type="text"
-          placeholder="Username"
-          value={userName}
-          onChange={(e) => setUserName(e.target.value)}
-          required
-        />
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <input
-          type="password"
-          placeholder="Confirm Password"
-          value={confirmPassword}
-          onChange={(e) => setConfirmPassword(e.target.value)}
-          required
-        />
-        <button type="submit">Register</button>
-        <button type="button" onClick={handleGoogleAuth} style={{ backgroundColor: "#DB4437", color: "white" }}>
-          Register with Google
-        </button>
-      </form>
-      <p>
-        Already have an account?{" "}
-        <span style={{ color: "blue", cursor: "pointer" }} onClick={() => navigate("/login")}>
-          Login here
-        </span>
-      </p>
+    <div style={{
+      display: "flex",
+      justifyContent: "center",
+      alignItems: "center",
+      height: "100vh",
+      backgroundColor: "#f4f4f9"
+    }}>
+      <div style={{
+        width: "350px",
+        padding: "30px",
+        backgroundColor: "#fff",
+        borderRadius: "8px",
+        boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.1)",
+        textAlign: "center"
+      }}>
+        <h2 style={{ marginBottom: "20px", color: "#333" }}>Register</h2>
+        <form onSubmit={handleRegister}>
+          <input
+            type="text"
+            placeholder="Username"
+            value={userName}
+            onChange={(e) => setUserName(e.target.value)}
+            required
+            style={{
+              display: "block",
+              width: "100%",
+              padding: "10px",
+              marginBottom: "15px",
+              border: "1px solid #ccc",
+              borderRadius: "5px",
+              fontSize: "16px",
+            }}
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={{
+              display: "block",
+              width: "100%",
+              padding: "10px",
+              marginBottom: "15px",
+              border: "1px solid #ccc",
+              borderRadius: "5px",
+              fontSize: "16px",
+            }}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            style={{
+              display: "block",
+              width: "100%",
+              padding: "10px",
+              marginBottom: "15px",
+              border: "1px solid #ccc",
+              borderRadius: "5px",
+              fontSize: "16px",
+            }}
+          />
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            style={{
+              display: "block",
+              width: "100%",
+              padding: "10px",
+              marginBottom: "15px",
+              border: "1px solid #ccc",
+              borderRadius: "5px",
+              fontSize: "16px",
+            }}
+          />
+          <button type="submit" style={{
+            width: "100%",
+            padding: "10px",
+            backgroundColor: "#007BFF",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            fontSize: "16px",
+            cursor: "pointer",
+            marginBottom: "10px"
+          }}>
+            Register
+          </button>
+          <button type="button" onClick={handleGoogleAuth} style={{
+            width: "100%",
+            padding: "10px",
+            backgroundColor: "#DB4437",
+            color: "white",
+            border: "none",
+            borderRadius: "5px",
+            fontSize: "16px",
+            cursor: "pointer",
+          }}>
+            Register with Google
+          </button>
+        </form>
+
+        <p style={{ marginTop: "15px" }}>
+          Already have an account?{" "}
+          <span style={{ color: "blue", cursor: "pointer", textDecoration: "underline" }} 
+                onClick={() => navigate("/login")}>
+            Login here
+          </span>
+        </p>
+      </div>
     </div>
   );
 };
