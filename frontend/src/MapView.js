@@ -4,6 +4,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "./MapView.css";
 import {CLIENT_URL, SERVER_URL} from "./config"
+import { getAuthHeader } from "./utils";
 
 const DynamicIcon = ({ zoom }) => {
   const size = Math.max(15, zoom * 2);
@@ -25,7 +26,7 @@ const MapView = () => {
 
   const fetchSpecies = async () => {
     try {
-      const response = await fetch(`${SERVER_URL}/api/species`);
+      const response = await fetch(`${SERVER_URL}/api/species`, {headers: await getAuthHeader()});
       if (!response.ok) {
         throw new Error("Failed to fetch species");
       }
@@ -66,7 +67,7 @@ const MapView = () => {
         `${SERVER_URL}/api/reports?season=${season.toLowerCase()}${
           species ? `&speciesId=${species}` : ""
         }`
-      );
+      ,{headers: await getAuthHeader()});
       if (!response.ok) {
         throw new Error("Failed to fetch reports");
       }

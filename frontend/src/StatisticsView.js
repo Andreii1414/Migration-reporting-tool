@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./StatisticsView.css";
 import { FaChartBar, FaList, FaClipboardList, FaDownload } from "react-icons/fa";
 import {CLIENT_URL, SERVER_URL} from "./config"
+import { getAuthHeader } from "./utils";
 
 const StatisticsView = () => {
   const [data, setData] = useState({
@@ -20,24 +21,24 @@ const StatisticsView = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const totalReportsRes = await fetch(`${SERVER_URL}/api/sparql/total-reports`);
+        const totalReportsRes = await fetch(`${SERVER_URL}/api/sparql/total-reports`, {headers: await getAuthHeader()});
         const totalReportsData = await totalReportsRes.json();
 
-        const continentsRes = await fetch(`${SERVER_URL}/api/sparql/most-reported-continents`);
+        const continentsRes = await fetch(`${SERVER_URL}/api/sparql/most-reported-continents`, {headers: await getAuthHeader()});
         const continentsData = await continentsRes.json();
 
-        const countriesRes = await fetch(`${SERVER_URL}/api/sparql/most-reported-countries`);
+        const countriesRes = await fetch(`${SERVER_URL}/api/sparql/most-reported-countries`, {headers: await getAuthHeader()});
         const countriesData = await countriesRes.json();
 
         const seasons = ["spring", "summer", "autumn", "winter"];
         const seasonsData = {};
         for (const season of seasons) {
-          const seasonRes = await fetch(`${SERVER_URL}/api/sparql/report-by-season/${season}`);
+          const seasonRes = await fetch(`${SERVER_URL}/api/sparql/report-by-season/${season}`, {headers: await getAuthHeader()});
           const seasonData = await seasonRes.json();
           seasonsData[season] = seasonData.data.count;
         }
 
-        const speciesRes = await fetch(`${SERVER_URL}/api/sparql/top-reported-species`);
+        const speciesRes = await fetch(`${SERVER_URL}/api/sparql/top-reported-species`, {headers: await getAuthHeader()});
         const speciesData = await speciesRes.json();
 
         setData({
@@ -59,7 +60,7 @@ const StatisticsView = () => {
   const handleCustomQuery = async () => {
     try {
       const encodedQuery = encodeURIComponent(customQuery);
-      const response = await fetch(`${SERVER_URL}/api/sparql/custom-query?query=${encodedQuery}`);
+      const response = await fetch(`${SERVER_URL}/api/sparql/custom-query?query=${encodedQuery}`, {headers: await getAuthHeader()});
 
       if (!response.ok) {
         throw new Error("Failed to fetch query results");

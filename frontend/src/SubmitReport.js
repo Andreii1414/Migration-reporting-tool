@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import "./SubmitReport.css";
-import {CLIENT_URL, SERVER_URL} from "./config"
+import { CLIENT_URL, SERVER_URL } from "./config";
+import { getAuthHeader } from "./utils";
 
 const SubmitReport = () => {
   const [title, setTitle] = useState("");
@@ -16,7 +17,9 @@ const SubmitReport = () => {
   useEffect(() => {
     const fetchSpecies = async () => {
       try {
-        const response = await fetch(`${SERVER_URL}/api/species`);
+        const response = await fetch(`${SERVER_URL}/api/species`, {
+          headers: await getAuthHeader(),
+        });
         if (!response.ok) {
           throw new Error("Failed to fetch species");
         }
@@ -36,7 +39,7 @@ const SubmitReport = () => {
 
     fetchSpecies().then((speciesList) => {
       setAvailableSpecies(speciesList);
-      setSpecies(speciesList.length ? speciesList[0].id : ""); 
+      setSpecies(speciesList.length ? speciesList[0].id : "");
     });
 
     if (navigator.geolocation) {
@@ -75,11 +78,20 @@ const SubmitReport = () => {
     data.append("upload_preset", uploadPreset);
 
     try {
+      const authHeader = await getAuthHeader();
+
+      if (!authHeader) {
+        return;
+      }
+
       const response = await fetch(
         `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
         {
           method: "POST",
           body: data,
+          headers: {
+            ...authHeader,
+          },
         }
       );
 
@@ -125,22 +137,30 @@ const SubmitReport = () => {
       continent: "Undefined",
     };
 
-
     console.log("Submitting report: ", JSON.stringify(reportData));
 
     try {
+      const authHeader = await getAuthHeader();
+
+      if (!authHeader) {
+        return;
+      }
+
       const response = await fetch(`${SERVER_URL}/api/reports/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(reportData),
+        headers: {
+          ...authHeader,
+        },
       });
 
       if (!response.ok) {
         throw new Error("Failed to submit report.");
       }
-      
+
       alert("Report submitted successfully!");
     } catch (error) {
       console.error("Error submitting report:", error);
@@ -167,7 +187,11 @@ const SubmitReport = () => {
         />
 
         <label>Date:</label>
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+        />
 
         <label>Species:</label>
         <input
@@ -200,7 +224,8 @@ const SubmitReport = () => {
 
         {location ? (
           <p className="location-text">
-            Location: {location.latitude.toFixed(5)}, {location.longitude.toFixed(5)}
+            Location: {location.latitude.toFixed(5)},{" "}
+            {location.longitude.toFixed(5)}
           </p>
         ) : (
           <p className="location-error">Fetching location...</p>
