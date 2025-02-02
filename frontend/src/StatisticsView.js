@@ -276,15 +276,15 @@ const StatisticsView = () => {
       ))}
 
       <h2>Top Reported Species</h2>
-      {data.top5Species.map(({ name, count }, index) => (
+      {data.top5Species.map(({ species, count }, index) => (
         <StatBox
-          key={name}
+          key={species}
           icon={<FaList />}
           label={`#${index + 1} Reported Species`}
           sparqlQuery={topReportedSpeciesQuery} 
           value={
             <>
-              One of the most commonly reported species is the <strong>${name}</strong>, with <strong>{count}</strong> observations.
+              One of the most commonly reported species is the <strong>{species}</strong>, with <strong>{count}</strong> observations.
             </>
           }
         />
