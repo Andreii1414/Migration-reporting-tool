@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" prefix="schema: http://schema.org">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Migration Reporting Tool - Technical Report</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="https://w3c.github.io/scholarly-html/scholarly.min.css" />
+    <meta name="author" content="Andrei-Alin Socoteala, Andrei-Constantin Apricopoai">
+  </head>
+  <body>
+  	 <header>
+      <h1 property="schema:name">Migration Reporting Tool - Technical Report</h1>
+      <p><strong>Authors:</strong></p>
+      <ul>
+        <li typeof="schema:Person">
+          <span property="schema:name">Andrei-Alin Socoteala</span>,
+          <span property="schema:affiliation">Alexandru Ioan Cuza University of Iasi</span>
+        </li>
+        <li typeof="schema:Person">
+          <span property="schema:name">Andrei-Constantin Apricopoai</span>,
+          <span property="schema:affiliation">Alexandru Ioan Cuza University of Iasi</span>
+        </li>
+      </ul>
+    </header>
+     <div id="toc">
+     	<p>The application can be found at: <a href="https://migration-reporting-tool-frontend.onrender.com/">https://migration-reporting-tool-frontend.onrender.com</a> It may take about a minute to start, as we are using a free service, and the application may become inactive. After that, it will work properly.</p>
+        <h3>Table of contents:</h3>
+        <ul></ul>
+    </div>
+    <article typeof="schema:ScholarlyArticle">
+      <section property="schema:hasPart" typeof="schema:WebPageElement">
+        <h2 property="schema:headline">1. Introduction</h2>
+        <p property="schema:description">Bird migration is a critical phenomenon that contributes to biodiversity, ecosystem stability, and climate change analysis. Understanding and monitoring avian migratory patterns require robust, scalable, and interoperable data-driven solutions. The <strong>Migration Reporting Tool</strong> is a comprehensive web-based application designed to collect, process, analyze, and disseminate data about bird migration through an integrated technology stack. This system leverages modern web technologies such as <strong>Node.js, Express.js, MongoDB, and React</strong>, while ensuring semantic interoperability through the adoption of <strong>RDF and SPARQL</strong>. </p>
+        <p>The application follows a multi-stage workflow that integrates diverse data sources and processing mechanisms. Initially, the system ingests image-based reports from the <strong>Flickr API</strong> and verifies their relevance through <strong>Google Vision API</strong>, ensuring that only valid bird-related data are processed. Next, <strong>Big Data Cloud API</strong> is employed to extract geospatial metadata, such as country and continent, from latitude and longitude coordinates. The collected reports, enriched with species classification and metadata, are persistently stored in a <strong>MongoDB</strong> database. </p>
+        <p>To facilitate knowledge representation and interoperability, the stored data is converted into an RDF-based format using a custom-built converter. The generated RDF triples conform to ontological standards and are published on <strong>GraphDB Ontotext Cloud</strong>, making them queryable via SPARQL endpoints. This enables both predefined and user-defined statistical analyses to be conducted efficiently. </p>
+        <p>The frontend is powered by <strong>React</strong> and provides an intuitive user experience. The primary user interface features an interactive map where users can filter reports based on species and seasons (winter, autumn, summer, spring). Clicking on a report reveals detailed information, including title, description, date, species, location, and an image of the bird. </p>
+        <p>Security and user management are integral aspects of the system. User authentication includes traditional registration, Google OAuth-based authentication, email verification, and password recovery via email. Additionally, report submissions undergo validation and require a title, description, date, image (uploaded via <strong>Cloudinary API</strong>), and species selection. Location data is automatically retrieved to ensure accurate geospatial mapping. </p>
+        <p>Statistical analysis is a core functionality of the application, accessible via the <strong>Statistics</strong> page. Predefined analytics include top five most reported species, top ten cities by reports, continent-wise report distribution, and seasonal reporting trends. Users also have the ability to create custom statistics by executing SPARQL queries directly on the GraphDB knowledge base. </p>
+      </section>
+	<section property="schema:hasPart" typeof="schema:WebPageElement">
+	    <h2 property="schema:headline">2. Internal Data Structures</h2>
+	    
+	    <p property="schema:description">
+	        The Migration Reporting Tool employs a well-structured database schema in 
+	        <span property="schema:softwareApplication">MongoDB</span> to facilitate efficient data storage, retrieval, and querying. 
+	        The database consists of several key collections: 
+	        <span property="schema:DataCatalog">Users</span>, 
+	        <span property="schema:DataCatalog">Species</span>, 
+	        <span property="schema:DataCatalog">Reports</span>, and 
+	        <span property="schema:DataCatalog">RefreshTokens</span>, 
+	        each serving a crucial role in the functionality of the application.
+	    </p>
+
+	    <h3 property="schema:headline">2.1 User Model</h3>
+	    <p property="schema:description">
+	        The <code>users</code> collection stores all registered users and their authentication details, providing the foundation for account management and security. Each user document includes the following fields:
+	    </p>
+	    <ul>
+	        <li><strong property="schema:identifier">_id (ObjectId)</strong>: A unique identifier automatically generated for each user.</li>
+	        <li><strong property="schema:identifier">username (String, required)</strong>: A unique identifier for each user, required for authentication.</li>
+	        <li><strong property="schema:email">email (String, required, unique)</strong>: Used for authentication and account recovery.</li>
+	        <li><strong property="schema:Text">passwordHash (String, required)</strong>: Securely stored password hash, encrypted using bcrypt.</li>
+	        <li><strong property="schema:identifier">googleId (String, optional)</strong>: If the user registers via Google OAuth, this field stores the Google ID.</li>
+	        <li><strong property="schema:image">profilePhoto (String, optional)</strong>: Stores the URL of the user's profile picture.</li>
+	        <li><strong property="schema:Boolean">verified (Boolean, default: false)</strong>: Indicates whether the user has verified their email.</li>
+	        <li><strong property="schema:dateCreated">createdAt (Date, default: current timestamp)</strong>: The timestamp of when the account was created.</li>
+	        <li><strong property="schema:dateModified">updatedAt (Date, default: current timestamp)</strong>: The timestamp of the last update to the user document.</li>
+	    </ul>
+	    
+	    <p property="schema:securityFeature">
+	        Authentication is handled using <strong>bcrypt</strong> for password hashing and <strong>JWT-based session management</strong>, ensuring secure authentication and authorization.
+	    </p>
+
+	    <h3 property="schema:headline">2.2 Species Model</h3>
+	    <p property="schema:description">
+	        The <code>species</code> collection acts as a reference for all bird species available for reporting in the application. This ensures consistency and allows users to report sightings using a standardized species list.
+	    </p>
+	    <ul>
+	        <li><strong property="schema:identifier">_id (ObjectId)</strong>: A unique identifier automatically generated for each species.</li>
+	        <li><strong property="schema:name">name (String, required, unique)</strong>: The scientific or common name of the bird species.</li>
+	        <li><strong property="schema:dateCreated">createdAt (Date, default: current timestamp)</strong>: The timestamp of when the species was created.</li>
+	        <li><strong property="schema:dateModified">updatedAt (Date, default: current timestamp)</strong>: The timestamp of the last update to the species document.</li>
+	    </ul>
+
+	    <h3 property="schema:headline">2.3 Report Model</h3>
+	    <p property="schema:description">
+	        The <code>reports</code> collection is at the core of the application, storing user-submitted bird sightings. Each report includes:
+	    </p>
+	    <ul>
+	        <li><strong property="schema:identifier">_id (ObjectId)</strong>: A unique identifier automatically generated for each report.</li>
+	        <li><strong property="schema:identifier">userId (ObjectId, optional)</strong>: References the user who submitted the report.</li>
+	        <li><strong property="schema:name">title (String, required)</strong>: The title of the report.</li>
+	        <li><strong property="schema:description">description (String, required)</strong>: Detailed description of the sighting.</li>
+	        <li><strong property="schema:datePublished">date (Date, required)</strong>: The date the sighting occurred.</li>
+	        <li><strong property="schema:identifier">speciesId (ObjectId, required)</strong>: References the species identified in the report.</li>
+	        <li><strong property="schema:image">imageUrl (String, required)</strong>: URL of the uploaded image (stored via Cloudinary).</li>
+	        <li><strong property="schema:latitude">latitude (Number, required)</strong>: The latitude where the sighting took place.</li>
+	        <li><strong property="schema:longitude">longitude (Number, required)</strong>: The longitude where the sighting took place.</li>
+	        <li><strong property="schema:location">continent (String, required)</strong>: The continent derived from geolocation using the Big Data Cloud API.</li>
+	        <li><strong property="schema:location">country (String, required)</strong>: The country derived from geolocation using the Big Data Cloud API.</li>
+	        <li><strong property="schema:dateCreated">createdAt (Date, default: current timestamp)</strong>: The timestamp of when the report was created.</li>
+	        <li><strong property="schema:dateModified">updatedAt (Date, default: current timestamp)</strong>: The timestamp of the last update to the report document.</li>
+	    </ul>
+
+	    <p property="schema:securityFeature">
+	        To ensure data integrity, images undergo validation through the 
+	        <strong property="schema:softwareApplication">Google Vision API</strong> before being stored, verifying that they indeed contain birds. Additionally, geolocation data is processed through the 
+	        <strong property="schema:softwareApplication">Big Data Cloud API</strong> to enrich the reports with continent and country information.
+	    </p>
+
+	    <h3 property="schema:headline">2.4 Refresh Token Model</h3>
+	    <p property="schema:description">
+	        The <code>refreshTokens</code> collection is crucial for maintaining secure user sessions, enabling token-based authentication while minimizing security risks. Each token document consists of:
+	    </p>
+	    <ul>
+	        <li><strong property="schema:identifier">_id (ObjectId)</strong>: A unique identifier automatically generated for each token.</li>
+	        <li><strong property="schema:identifier">userId (ObjectId, required)</strong>: References the user to whom the token belongs.</li>
+	        <li><strong property="schema:Text">tokenHash (String, required)</strong>: Securely stored hash of the refresh token.</li>
+	        <li><strong property="schema:dateExpires">expires (Date, required)</strong>: Expiration date of the token.</li>
+	        <li><strong property="schema:dateCreated">createdAt (Date, default: current timestamp)</strong>: The timestamp of when the token was issued.</li>
+	    </ul>
+
+	    <p property="schema:securityFeature">
+	        This model is essential for handling user sessions securely and preventing unauthorized access.
+	    </p>
+	</section>
+      <section property="schema:hasPart" typeof="schema:WebPageElement">
+        <h2 property="schema:headline">3. API Implementation</h2>
+        <p property="schema:description">This API follows a RESTful architecture and provides access to bird migration reports. Below are descriptions of the main routes:</p>
+        <h3 property="schema:headline">GET /api/species</h3>
+        <p property="schema:description">Retrieves a list of all bird species stored in the database.</p>
+        <h4>Response</h4>
+        <pre><code>{
+  "isSuccess": true,
+  "apiResponseCode": 1,
+  "data": [
+    {
+      "_id": "6795352ee4ff5eea0eb695fb",
+      "name": "cuckoos"
+    },
+    {
+      "_id": "67953560e4ff5eea0eb69600",
+      "name": "sparrows"
+    },
+    {
+      "_id": "679535b7e4ff5eea0eb69609",
+      "name": "buntings"
+    },
+    ]
+}
+        </code>
+				</pre>
+        <h4>Example Implementation (Node.js with Express)</h4>
+        <pre><code>const getSpecies = async () => {
+    try {
+        const species = await Species.find({}).exec();
+        return {
+            type: ResponseTypes.Success,
+            status: StatusCodes.Ok,
+            data: species,
+        };
+    } catch (error) {
+        console.error('Error retrieving species:', error);
+        return {
+            type: ResponseTypes.Error,
+            status: StatusCodes.InternalServerError,
+            error: ErrorMessages.UnexpectedErrorGet,
+        };
+    }
+};
+</code>
+				</pre>
+        <h3 property="schema:headline">GET /api/species/:id</h3>
+        <p property="schema:description">Retrieves a specific species by its unique ID.</p>
+        <h4>Response</h4>
+        <pre><code>{
+  "isSuccess": true,
+  "apiResponseCode": 1,
+  "data": {
+    "_id": "679534d4e4ff5eea0eb695f8",
+    "name": "ducks"
+  }
+}
+        </code>
+				</pre>
+        <h3 property="schema:headline">GET /api/reports</h3>
+        <p property="schema:description">Based on season and species, retrieves a list of bird migration reports.</p>
+        <h4>Parameters</h4>
+        <ul>
+          <li>
+            <strong>season (string, required)</strong> - The season for the report (e.g., Spring, Summer, Autumn, Winter).
+          </li>
+          <li>
+            <strong>speciesId (string, required)</strong> - The unique ID of the bird species.
+          </li>
+        </ul>
+        <h4>Response</h4>
+        <pre><code>{
+  "isSuccess": true,
+  "apiResponseCode": 1,
+  "data": [
+    {
+      "_id": "6797f1d4b1daea6395afca96",
+      "title": "Brown Cuckoo-Dove (Macropygia phasianella)",
+      "description": "Reasonably common through rainforests of eastern Australia.\nBulli, NSW, Australia",
+      "date": "2024-02-18T04:26:37.000Z",
+      "speciesId": "6795352ee4ff5eea0eb695fb",
+      "imageUrl": "https://live.staticflickr.com/65535/53614398470_51e764cb12_b.jpg",
+      "latitude": -34.330182,
+      "longitude": 150.901615,
+      "continent": "Australian continent",
+      "country": "Australia",
+      "__v": 0,
+      "createdAt": "2025-01-27T20:51:33.901Z",
+      "updatedAt": "2025-01-27T20:51:33.901Z"
+    },
+    {
+      "_id": "6797f1d4b1daea6395afca98",
+      "title": "river bend - black-faced cuckoo-shrike",
+      "description": "Many thanks for your visits, faves and comments.",
+      "date": "2025-01-09T05:37:16.000Z",
+      "speciesId": "6795352ee4ff5eea0eb695fb",
+      "imageUrl": "https://live.staticflickr.com/65535/54280327839_55318f959b_b.jpg",
+      "latitude": -35.148012,
+      "longitude": 148.945413,
+      "continent": "Australian continent",
+      "country": "Australia",
+      "__v": 0,
+      "createdAt": "2025-01-27T20:51:33.901Z",
+      "updatedAt": "2025-01-27T20:51:33.901Z"
+    },
+    ]}
+            </code>
+				</pre>
+        <h4>Example Implementation (Node.js with Express)</h4>
+        <pre><code>try{
+    const seasonToMonths = {
+        "spring": [3, 4, 5],
+        "summer": [6, 7, 8],
+        "autumn": [9, 10, 11],
+        "winter": [12, 1, 2],
+    };
+    const months = seasonToMonths[season];
+    const filter = {
+        $expr: {
+            $in: [{ $month: "$date" }, months],
+        },
+    };
+    if(speciesId != "All species" && speciesId != null) {
+       filter.speciesId = speciesId;
+    }
+    const reports = await Report.find(filter);
+}
+            </code>
+				</pre>
+        <h3 property="schema:headline">POST /api/reports</h3>
+        <p property="schema:description">Creates a new bird migration report based on user input.</p>
+        <h4>Request body</h4>
+        <pre><code>{
+  "title": "Spring Migration",
+  "description": "Observed a flock of swallows.",
+  "date": "2024-04-15T09:30:00Z",
+  "speciesId": "6795358ae4ff5eea0eb69604",
+  "imageUrl": "https://example.com/image.jpg",
+  "latitude": 34.0522,
+  "longitude": -118.2437,
+  "continent": "North America",
+  "country": "USA"
+}
+            </code>
+				</pre>
+        <h4>Example Implementation (Node.js with Express)</h4>
+        <pre><code>const locationData = await getLocationData(reportData.latitude, reportData.longitude);
+const report = new Report({
+    title: reportData.title,
+    description: reportData.description,
+    date: reportData.date,
+    speciesId: reportData.speciesId,
+    imageUrl: reportData.imageUrl,
+    latitude: reportData.latitude,
+    longitude: reportData.longitude,
+    country: locationData.country,
+    continent: locationData.continent,
+});
+await report.save();
+            </code>
+				</pre>
+        <h3 property="schema:headline">POST /api/data</h3>
+        <p property="schema:description">Fetches data from Flickr, filters it using Google Vision API and Big Data Cloud, then stores it in the database. This route is protected by an internal API key.</p>
+        <h4>Headers</h4>
+        <ul>
+          <li>
+            <strong>x-internal-secret (string, required)</strong> - Internal key for authentication.
+          </li>
+        </ul>
+        <h3 property="schema:headline">GET /api/sparql/most-reported-countries</h3>
+        <p property="schema:description">/api/sparql/ routes are used to execute SPARQL queries on the GraphDB knowledge base. For example, /most-reported-countries fetches the top 10 countries with the most bird reports.</p>
+        <h4>Response</h4>
+        <pre><code>{
+  "type": "success",
+  "data": [
+    {
+      "country": "United States of America (the)",
+      "count": 454
+    },
+    {
+      "country": "United Kingdom of Great Britain and Northern Ireland (the)",
+      "count": 200
+    },
+    ...
+]}
+            </code>
+				</pre>
+        <h4>Example Implementation (Node.js with Express)</h4>
+        <pre><code>const getMostReportedCountries = async () => {
+    const query = `
+        PREFIX ex: &lthttp://example.org/&gt
+        SELECT ?country (COUNT(?report) AS ?count)
+        WHERE {
+            ?report a ex:Report ;
+                    ex:country ?country .
+        }
+        GROUP BY ?country
+        ORDER BY DESC(?count)
+        LIMIT 10
+    `;
+    try {
+        const result = await executeSPARQLQuery(query);
+        const countries = result.map((binding) => ({
+            country: binding.country.value,
+            count: parseInt(binding.count.value, 10),
+        }));
+        ...
+    }}
+            </code>
+				</pre>
+
+		<p property="schema:description">In terms of authentication, this system provides a structured way for users to access, register, and manage their accounts securely:</p>
+		<ul>
+			<li>Logging in and registering: Users can log in using their credentials or register a new account. Additionally, they have the option to authenticate through Google, making the process faster.</li>
+			<li>Google authentication: Users who prefer not to create an account manually can sign in with their Google account. If they authenticate successfully, they will be redirected back to the application.</li>
+			<li>Logging out: When users decide to end their session, they can log out, ensuring their access tokens are invalidated for security purposes.</li>
+			<li>Token management: If a user’s session expires, they can request a new access token using a refresh token, avoiding the need to log in again.</li>
+			<li>Email verification: After registration, users can receive a verification email to confirm ownership of their email address.</li>
+			<li>Password management: If a user forgets his password, he can request a reset link via email and set a new password securely.</li>
+		</ul>
+        <p property="schema:description">In addition to these routes, there are multiple routes for queries in SPARQL as well as a route for custom queries, routes for authentication and other PUT, DELETE routes protected by an internal secret. All routes can be found in the API specification, <a href="https://app.swaggerhub.com/apis/mirt/Migration-Reporting-Tool/1.0.0#/Authentication/post_api_auth_login">here</a>
+        </p>
+        <h3 property="schema:headline">Diagrams</h3>
+        <p property="schema:description"> The two diagrams (Sequence and Flowchart) outline the Migration Reporting Tool’s workflow, detailing interactions between the user, frontend, backend, APIs, and databases. It maps the journey of data from user actions to processing and storage. The process begins with user authentication via email/password or Google OAuth. For email registration, a verification email is sent via EmailService. Once authenticated, users can access the platform’s features. A key function is fetching bird data. When a user requests bird details, the backend retrieves images from Flickr API, verifies them with Google Vision API, and extracts geographical data via BigDataCloud API. The processed data, including reports and species details, is stored in MongoDB. The system also converts stored data into Turtle format for GraphDB. A Converter transforms MongoDB records into RDF and sends them to GraphDB, enabling structured queries via SPARQL. Users explore data through an interactive map, selecting a season and bird species to view relevant reports. The frontend queries MongoDB, retrieves reports, and displays them on the map with images and descriptions. For statistical insights, users can access predefined statistics (e.g., top reported species, city-based reports, seasonal distributions) or run custom SPARQL queries on GraphDB. The backend processes these queries and returns results to the frontend. Users can also contribute reports by submitting details and uploading images via Cloudinary API. The backend stores the report in MongoDB and confirms the submission. Overall, the diagram highlights the system’s structured approach to data collection, validation, storage, and retrieval, integrating multiple APIs and databases for seamless bird migration tracking.</p>
+        <h4>Sequence:</h4>
+        <img src="./sequence.png" alt="Sequence diagram" style="width:60%">
+        <h4>Flowchart:</h4>
+        <img src="./flowchart.png" alt="Flowchart diagram" style="width:60%">
+        <p property="schema:description">Other diagrams, such as C4 diagrams, can be seen <a href="https://docs.google.com/document/d/1Bl7rBoMQgfKZMvLB0fGxFYaK7EEDNZuoTHBYo6DZlEk/edit?tab=t.0#heading=h.kazzxz934q0f">here</a>. </p>
+      </section>
+	<section property="schema:hasPart" typeof="schema:WebPageElement">
+	    <h2 property="schema:headline">4. RDF-based Knowledge Model</h2>
+        <p>In the Migration Reporting Tool, the RDF-based knowledge model is used to structure and semantically enrich bird sighting reports. This model allows for a standardized representation of data, making it easier to integrate with other datasets and efficiently query the information using SPARQL. By structuring the data as subject–predicate–object triples, it can be linked to other datasets, either internally or externally. For example, species information can be connected to existing biodiversity ontologies, while geographical data can be linked to open datasets providing additional details about regions or ecosystems.</p>
+        <p>The RDF model of the application is built around the concept of a <code>Report</code>, which represents an individual bird sighting. Each report includes multiple descriptive properties, such as: title, description, date of observation, species, image, geographical coordinates, geographical information. </p>
+        <p>Regarding ontology reuse, the application incorporates standard vocabularies such as schema.org for common properties, including report title (schema:name), description (schema:description), publication date (schema:datePublished), image (schema:image), and location (schema:location). Additionally, for more application-specific elements, such as species association and country identification, custom extensions have been defined using the ex: prefix (e.g., ex:species, ex:country).</p>
+        <p>To further enhance interoperability and data enrichment, Wikidata has been integrated into the RDF model. Instead of treating species as simple text values, the application retrieves their corresponding Wikidata URIs, linking reports to structured knowledge about each bird species. This linkage enables richer semantic queries, as users can access taxonomic classification, habitat details, and conservation status from Wikidata. Dbpedia is also used to link the continent and country to the reports. This allows for more detailed information about the geographical location of the bird sightings. </p>
+        <p>By structuring data in this way, the application enables users to efficiently query and analyze bird migration patterns, geographical distribution, and seasonal trends. The fact that all statistics in the Statistics section are generated through SPARQL queries demonstrates the flexibility and power of this semantic model.</p>
+        <pre><code>@prefix ex: &lthttp://example.org/&gt .
+prefix xsd: &lthttp://www.w3.org/2001/XMLSchema#&gt .
+prefix wd: &lthttps://www.wikidata.org/wiki/&gt .
+prefix dbpedia: &lthttp://dbpedia.org/resource/&gt .
+
+    ex:report6795fe2c11f84dd7768b8a49 a ex:Report ;
+        ex:title "Dalmatian pelican" ;
+        ex:date "2025-01-24T13:25:18.000Z"^^xsd:dateTime ;
+        ex:species ex:species6795354de4ff5eea0eb695fe ;
+        ex:speciesName "pelicans";
+        ex:speciesWikidata "https://www.wikidata.org/wiki/Q11846678";
+        ex:description "Dalmatian pelican in Lake Kerkini" ;
+        ex:imageUrl "www.example.com" ;
+        ex:latitude "41.165473"^^xsd:float ;
+        ex:longitude "23.203811"^^xsd:float ;
+        ex:continent "dbpedia.org/resource/Europe" ;
+        ex:country "dbpedia.org/resource/Greece" .
+
+
+    ex:report6795fe2c11f84dd7768b8a2b a ex:Report ;
+        ex:title "Sleepy ducks" ;
+        ex:date "2025-01-25T06:31:54.000Z"^^xsd:dateTime ;
+        ex:species ex:species679534d4e4ff5eea0eb695f8 ;
+        ex:speciesName "ducks";
+        ex:speciesWikidata "https://www.wikidata.org/wiki/Q3736439";
+        ex:description "Australian wood ducks" ;
+        ex:imageUrl "www.example.com" ;
+        ex:latitude "-34.409441"^^xsd:float ;
+        ex:longitude "150.898879"^^xsd:float ;
+        ex:continent "dbpedia.org/resource/Australia_(continent)" ;
+        ex:country "dbpedia.org/resource/Australia" .`
+            </code>
+						</pre>
+      </section>
+	<section property="schema:hasPart" typeof="schema:WebPageElement">
+	    <h2 property="schema:headline">5. External Data & SPARQL</h2>
+        <p>The Migration Reporting Tool primarily relies on user-submitted data for bird sightings. However, integrating external knowledge bases such as Wikidata can significantly enhance the richness and semantic accuracy of the data. For example, instead of storing only the bird species name as a plain string (e.g., "pelicans"), the system can link species to Wikidata URIs, which provide additional structured information, such as taxonomy, habitat, and conservation status. Dbpedia is also used to link the continent and country to the reports. This allows for more detailed information about the geographical location of the bird sightings. </p>
+        <h3 property="schema:headline">SPARQL queries</h3>
+        <h4>1. Query: Find the Closest Report with Wikidata Species Link</h4>
+        <p>This query finds the closest report to (41.0, 23.0) while also retrieving the species name and its Wikidata link. This query is helpful for geospatial biodiversity analysis, allowing researchers to find the closest species report with linked Wikidata information. </p>
+        <pre><code>prefix ex: &lthttp://example.org/&gt 
+prefix xsd: &lthttp://www.w3.org/2001/XMLSchema#&gt 
+
+SELECT ?report ?title ?latitude ?longitude ?speciesName ?wikidataLink
+WHERE {
+    ?report a ex:Report ;
+            ex:title ?title ;
+            ex:latitude ?lat ;
+            ex:longitude ?long ;
+            ex:speciesName ?speciesName ;
+            ex:speciesWikidata ?wikidataLink .
+    BIND(abs(?lat - 41.0) + abs(?long - 23.0) AS ?distance)
+}
+ORDER BY ?distance
+LIMIT 1
+            </code>
+						</pre>
+        <h4>2. Find the Earliest and Latest Observation of Each Species</h4>
+        <p property="schema:description">This query retrieves the earliest and latest observation dates for each bird species in the dataset. By analyzing the temporal distribution of sightings, researchers can identify migration patterns, breeding seasons, and other temporal trends.</p>
+        <pre><code>prefix ex: &lthttp://example.org/&gt 
+prefix xsd: &lthttp://www.w3.org/2001/XMLSchema#&gt 
+
+SELECT ?speciesName (MIN(?date) AS ?earliestReport) (MAX(?date) AS ?latestReport)
+WHERE {
+    ?report a ex:Report ;
+            ex:speciesName ?speciesName ;
+            ex:date ?date .
+}
+GROUP BY ?speciesName
+            </code>
+						</pre>
+        <h4>3. Retrieve the Two Closest Reports for Each Species</h4>
+        <p property="schema:description">Finds the two closest reports for each species based on real geographical distance using the Haversine formula. Useful for tracking species movement patterns or identifying clusters of sightings.</p>
+        <pre><code>prefix ex: &lthttp://example.org/&gt 
+prefix xsd: &lthttp://www.w3.org/2001/XMLSchema#&gt 
+
+SELECT ?speciesName ?report1 ?report2 ?distance
+WHERE {
+    ?report1 a ex:Report ;
+             ex:speciesName ?speciesName ;
+             ex:latitude ?lat1 ;
+             ex:longitude ?long1 .
+    
+    ?report2 a ex:Report ;
+             ex:speciesName ?speciesName ;
+             ex:latitude ?lat2 ;
+             ex:longitude ?long2 .
+    
+    FILTER(?report1 != ?report2)
+    
+    BIND(6371 * ACOS(
+        SIN(?lat1 * PI() / 180) * SIN(?lat2 * PI() / 180) +
+        COS(?lat1 * PI() / 180) * COS(?lat2 * PI() / 180) * 
+        COS((?long2 - ?long1) * PI() / 180)
+    ) AS ?distance)
+}
+ORDER BY ?speciesName ?distance
+LIMIT 10
+            </code>
+						</pre>
+        <h4>4. Find Reports That Mention the Same Species Observed in Two Different Continents</h4>
+        <p property="schema:description">Finds species that have been observed in at least two different continents. This helps identify migratory species or potential introduction of species into new ecosystems.</p>
+        <pre><code>prefix ex: &lthttp://example.org/&gt 
+prefix xsd: &lthttp://www.w3.org/2001/XMLSchema#&gt 
+
+SELECT DISTINCT ?speciesName ?continent1 ?continent2
+WHERE {
+    ?report1 a ex:Report ;
+             ex:speciesName ?speciesName ;
+             ex:continent ?continent1 .
+    
+    ?report2 a ex:Report ;
+             ex:speciesName ?speciesName ;
+             ex:continent ?continent2 .
+    
+    FILTER(?continent1 != ?continent2) 
+}
+ORDER BY ?speciesName
+            </code>
+						</pre>
+        <h4>5. Find Species That Have Been Observed in the Largest Number of Countries </h4>
+        <p property="schema:description">Counts the number of distinct countries where each species has been reported. Useful for studying species migration patterns.</p>
+        <pre><code>prefix ex: &lthttp://example.org/&gt 
+prefix xsd: &lthttp://www.w3.org/2001/XMLSchema#&gt 
+
+SELECT ?speciesName (COUNT(DISTINCT ?country) AS ?countryCount)
+WHERE {
+    ?report a ex:Report ;
+            ex:speciesName ?speciesName ;
+            ex:country ?country .
+}
+GROUP BY ?speciesName
+ORDER BY DESC(?countryCount)
+LIMIT 5
+            </code>
+						</pre>
+        <h3 property="schema:headline">How This Solution Conforms to Linked Data Principles</h3>
+        <p property="schema:description">The Linked Data principles aim to ensure that data is structured, accessible, and interlinked across the web. The Migration Reporting Tool aligns with these principles in several ways:</p>
+        <ul>
+          <li>Using URIs as Identifiers</li>
+          <p>Species are linked to their Wikidata URIs, ensuring that every species name references an established knowledge source. Geographical locations (countries and continents) use DBpedia URIs, allowing external datasets to refer to these locations in a standardized way. </p>
+          <li>Providing Useful Data in Standard Formats</li>
+          <p> The application exposes bird sighting reports in RDF/Turtle, allowing easy consumption by other systems. Queries are performed using SPARQL, a standard query language for RDF. </p>
+          <li>Abstraction</li>
+          <p>Avoiding implementation details: dbpedia.org/resource/Romania versus http://www4.wiwiss.fu-berlin.de:2020/demos/dbpedia/cgi-bin/resources.php?id=Romania</p>
+          <li>Provide Useful Information When Someone Looks Up a URI</li>
+          <p>When resolving a species URI from Wikidata, users receive structured information about its taxonomy, habitat, and conservation status. When resolving a geographical URI from DBpedia, users obtain detailed descriptions, including population data, climate information, and historical context. Reports are structured using RDF vocabularies, such as schema.org, making them compatible with semantic web applications.</p>
+        </ul>
+        <p>Benefits of This Approach:</p>
+        <ul>
+          <li>Enhanced data discoverability: Researchers can follow links to external knowledge bases for deeper insights.</li>
+          <li>Interoperability: system aligns with established semantic web standards, allowing easy integration with other datasets.</li>
+          <li>Rich semantic querying: Using SPARQL, users can perform complex queries across linked datasets, enabling advanced biodiversity analysis.</li>
+          <li>Future-proofing: By adhering to Linked Data principles, the system can evolve and integrate with new datasets without requiring significant changes.</li>
+        </ul>
+      </section>
+	<section property="schema:hasPart" typeof="schema:WebPageElement">
+	    <h2 property="schema:headline">6. User Guide</h2>
+        <p property="schema:description">This section provides step-by-step instructions on how to use the Migration Reporting Tool. Below, you will find detailed explanations for the main pages, including screenshots to help you navigate the application efficiently.</p>
+        <h3 property="schema:headline">6.1 Map Page</h3>
+        <p property="schema:description">The map page is the main interface where users can visualize bird migration reports based on season and species. Follow these steps to use it:</p>
+        <ol>
+          <li>Use the dropdown menus to select a <strong>season</strong> (Winter, Spring, Summer, or Autumn) and a <strong>bird species</strong>. </li>
+          <li>Click the <strong>"Show Reports"</strong> button to display all reports matching the selected criteria. </li>
+          <li>Reports will appear as markers on the map. Click on a marker to view report details.</li>
+        </ol>
+        <p>
+          <em>Displayed report details include:</em> title, description, date, species, and an image of the bird.
+        </p>
+        <p>
+          <strong>Screenshot:</strong>
+          <img src="./image1.png" alt="Map page showing bird reports" style="width: 60%;">
+        </p>
+        <h3 property="schema:headline">6.2 Statistics Page</h3>
+        <p property="schema:description">The statistics page provides predefined migration insights and allows users to create custom queries using SPARQL.</p>
+        <h4>Predefined Statistics:</h4>
+        <ul>
+          <li>Top 5 most reported bird species.</li>
+          <li>Top 10 cities with the most reports.</li>
+          <li>Reports distribution by continent.</li>
+          <li>Total reports count.</li>
+          <li>Reports based on season.</li>
+        </ul>
+        <h4>Custom Statistics:</h4>
+        <ol>
+          <li>Use the SPARQL query editor to write custom queries.</li>
+          <li>Example query is provided to help users understand the RDF format.</li>
+          <li>Click the "Run Query" button to fetch results from the GraphDB database.</li>
+        </ol>
+        <p>
+          <strong>Screenshot:</strong>
+          <img src="./image2.png" alt="Statistics page displaying migration data" style="width: 60%;">
+        </p>
+        <p>
+          <strong>Screenshot:</strong>
+          <img src="./image3.png" alt="Statistics page displaying migration data" style="width: 60%;">
+        </p>
+        <h3 property="schema:headline">6.3 Submit Report Page</h3>
+        <p property="schema:description">Users can submit new bird migration reports by filling out a form. Follow these steps:</p>
+        <ol>
+          <li>Enter a <strong>title</strong> and a brief <strong>description</strong> of the sighting. </li>
+          <li>Select the <strong>date</strong> of observation. </li>
+          <li>Choose the bird <strong>species</strong> from the dropdown list. </li>
+          <li>Upload an image of the bird. The image is processed via Cloudinary to generate a link.</li>
+          <li>The location (latitude and longitude) is detected automatically.</li>
+          <li>Click the <strong>Submit</strong> button to save the report. </li>
+        </ol>
+        <p>
+          <strong>Screenshot:</strong>
+          <img src="./image4.png" alt="Submit report form" style="width: 60%;">
+        </p>
+        <p>Once submitted, the report is stored in the MongoDB database and appears on the map page.</p>
+      </section>
+	<section property="schema:hasPart" typeof="schema:WebPageElement">
+	    <h2 property="schema:headline">7. Case Studies</h2>
+        <article>
+          <h3 property="schema:headline">Case Study 1: Seasonal Migration Patterns of Storks</h3>
+          <p>
+            <strong>Overview:</strong> Data collected using the Migration Reporting Tool revealed clear seasonal migration patterns for storks across different regions.
+          </p>
+          <p>
+            <strong>Findings:</strong> Storks are highly present in Europe during spring and summer, taking advantage of the abundant food supply and favorable breeding conditions. As autumn approaches, they begin to disappear from these regions.
+          </p>
+          <p>
+            <strong>Reason:</strong> The drop in temperature and reduction in food sources, such as insects and small amphibians, push storks to migrate towards warmer regions.
+          </p>
+          <p>
+            <strong>Impact:</strong> In winter, storks start appearing in warmer areas like Central America and Africa, where they can find better feeding and nesting conditions, ensuring their survival through the colder months.
+          </p>
+          <img src="./image5.png" alt="Stork migration patterns summer" style="width: 60%;">
+          <img src="./image6.png" alt="Stork migration patterns winter" style="width: 60%;">
+        </article>
+        <article>
+          <h3 property="schema:headline">Case Study 2: Most Reported Bird Species Per Season</h3>
+          <p>
+            <strong>Overview:</strong> Using the statistics page, users identified which bird species were most commonly reported during different seasons.
+          </p>
+          <p>
+            <strong>Findings:</strong> Some species, like thrushes and storks, dominate spring reports, while winter reports show increased sightings of species like waterbirds and ducks.
+          </p>
+          <p>
+            <strong>Impact:</strong> This analysis helps researchers track seasonal population shifts and informs conservation policies for migratory birds.
+          </p>
+          <img src="./image7.png" alt="Most reported bird species per season" style="width: 60%;">
+          <img src="./image8.png" alt="Most reported bird species per season" style="width: 60%;">
+        </article>
+        <article>
+          <h3 property="schema:headline">Case Study 3: Increased Reports During Migration Peaks</h3>
+          <p>
+            <strong>Overview:</strong> The application recorded significant spikes in reports during peak migration months.
+          </p>
+          <p>
+            <strong>Findings:</strong> Analysis of user submissions showed that the highest number of reports were recorded during spring, aligning with well-documented bird migration periods.
+          </p>
+          <p>
+            <strong>Impact:</strong> This pattern confirms that users are actively tracking bird movements, making the tool a valuable resource for real-time migration monitoring.
+          </p>
+          <img src="./image9.png" alt="Increased reports during migration peaks" style="width: 60%;">
+        </article>
+      </section>
+	<section property="schema:hasPart" typeof="schema:WebPageElement">
+	    <h2 property="schema:headline">8. Video Demonstration</h2>
+	    <iframe width="650" height="415" 
+	        src="https://www.youtube.com/embed/POh1sB7q3CQ" 
+	        title="YouTube video player" frameborder="0" 
+	        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+	        allowfullscreen>
+	    </iframe>
+	</section>
+	<section property="schema:hasPart" typeof="schema:WebPageElement">
+	    <h2 property="schema:headline">9. Evaluation</h2>
+        <img src="./image10.png" alt="Evaluation" style="width: 60%;">
+        <p></p>
+      </section>
+	<section property="schema:hasPart" typeof="schema:WebPageElement">
+	    <h2 property="schema:headline">10. Comparison with Existing Solutions</h2>
+        <p property="schema:description">The <strong>Migration Reporting Tool (MiRT)</strong> provides a comprehensive solution for tracking bird migrations. A comparison with existing tools can highlight some advantages and disadvantages of MiRT: </p>
+        <h3 property="schema:headline">1. BirdCast</h3>
+        <p>
+          <strong>Overview:</strong> BirdCast provides real-time migration forecasts using weather radar data to predict bird movements.
+        </p>
+        <ul>
+          <li>
+            <strong>Advantages:</strong> Real-time forecasts, meteorological integration, predictive modeling.
+          </li>
+          <li>
+            <strong>Disadvantages:</strong> No user interaction, limited to nocturnal migration, no image-based verification.
+          </li>
+        </ul>
+        <h3 property="schema:headline">2. Ducks</h3>
+        <p>
+          <strong>Overview:</strong> A database focusing on waterfowl migration, tracking movement patterns for conservation purposes.
+        </p>
+        <ul>
+          <li>
+            <strong>Advantages:</strong> Specialized waterfowl data, strong scientific backing, historical migration trends.
+          </li>
+          <li>
+            <strong>Disadvantages:</strong> Limited to ducks and geese, regionally focused.
+          </li>
+        </ul>
+        <h3 property="schema:headline">3. eBird</h3>
+        <p>
+          <strong>Overview:</strong> A global platform for birdwatchers to record sightings and contribute to citizen science projects.
+        </p>
+        <ul>
+          <li>
+            <strong>Advantages:</strong> Large user base, global coverage, citizen science projects.
+          </li>
+        </ul>
+      </section>
+	<section property="schema:hasPart" typeof="schema:WebPageElement">
+	    <h2 property="schema:headline">11. Future Work</h2>
+        <p property="schema:description">The Migration Reporting Tool (MiRT) has laid a strong foundation for bird migration tracking and reporting. However, several enhancements and extensions can be implemented in future versions to improve functionality, user engagement, and scientific accuracy.</p>
+        <ul>
+          <li>
+            <h3 property="schema:headline">AI-Powered Species Recognition</h3>
+            <p property="schema:description">Currently, the platform utilizes Google Vision API for image verification. Future iterations could integrate a custom-trained AI model capable of identifying bird species with higher accuracy, reducing dependency on third-party services.</p>
+          </li>
+          <li>
+            <h3 property="schema:headline">Real-Time Data Visualization</h3>
+            <p property="schema:description">Enhancing the interactive map with real-time migration routes and heatmaps based on recent reports could provide users with dynamic insights into seasonal movements.</p>
+          </li>
+          <li>
+            <h3 property="schema:headline">Community Engagement and Gamification</h3>
+            <p property="schema:description">Introducing leaderboards, achievement badges, and user challenges could encourage more participation. Verified contributors could receive recognition for their contributions to citizen science efforts.</p>
+          </li>
+          <li>
+            <h3 property="schema:headline">Enhanced SPARQL Query Builder</h3>
+            <p property="schema:description">While the current system allows users to create custom SPARQL queries, a more user-friendly interface with visual query-building capabilities would make RDF data exploration more accessible to non-expert users.</p>
+          </li>
+          <li>
+            <h3 property="schema:headline">Offline Data Collection</h3>
+            <p property="schema:description">Adding offline functionality would enable users in remote areas to record observations without internet access, synchronizing data once connectivity is restored.</p>
+          </li>
+          <li>
+            <h3 property="schema:headline">Advanced Filtering and Analytics</h3>
+            <p property="schema:description">Expanding filtering options for reports, such as wind patterns, temperature variations, and habitat types, would provide deeper insights into migration behaviors.</p>
+          </li>
+          <li>
+            <h3 property="schema:headline">Multi-Language Support</h3>
+            <p property="schema:description">Providing translations for multiple languages would make the platform more inclusive, enabling global participation from a diverse range of users.</p>
+          </li>
+          <li>
+            <h3 property="schema:headline">Automated Data Quality Assurance</h3>
+            <p property="schema:description">Implementing automated validation checks for reports, such as anomaly detection for outlier locations or timestamps, would enhance the reliability of collected data.</p>
+          </li>
+        </ul>
+      </section>
+    </article>
+        <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            let tocContainer = document.querySelector("#toc ul");
+            let headers = document.querySelectorAll("section h2, section h3, section h4");
+
+            headers.forEach((header, index) => {
+                let id = "section-" + index;
+                header.id = id;
+
+                let li = document.createElement("li");
+                li.style.marginLeft = header.tagName === "H3" ? "10px" : 
+                                      header.tagName === "H4" ? "20px" : "0";
+
+                let link = document.createElement("a");
+                link.href = "#" + id;
+                link.textContent = header.textContent;
+
+                li.appendChild(link);
+                tocContainer.appendChild(li);
+            });
+        });
+    </script>
+
+
+  </body>
+</html>
