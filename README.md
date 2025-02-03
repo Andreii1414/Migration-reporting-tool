@@ -1,3 +1,4 @@
+Welcome to the Migration-reporting-tool wiki!
 # Migration-reporting-tool
 
 
@@ -11,14 +12,17 @@
   * [Features](#features)
   * [Color Reference](#-color-reference)
   * [Environment Variables](#environment-variables)
+- [Deliverables](#deliverables)
+  * [Team contributions](#team-contributions)
+  * [Project progress](#project-progress)
 - [Getting Started](#getting-started)
   * [Prerequisites](#prerequisites)
   * [Installation](#installation)
-  * [Deployment](#deployment)
 - [Usage](#usage)
 - [Acknowledgements](#acknowledgements)
 
   
+The application can be found at: https://migration-reporting-tool-frontend.onrender.com/ It may take about a minute to start, as we are using a free service, and the application may become inactive. After that, it will work properly.
 
 <!-- About the Project -->
 ## About the Project
@@ -106,12 +110,43 @@ The system integrates a knowledge graph stored in GraphDB (Ontotext) Cloud, enab
 | Button Color | ![#CD1818](https://via.placeholder.com/10/CD1818?text=+) #CD1818 |
 | Text Color | ![#EEEEEE](https://via.placeholder.com/10/EEEEEE?text=+) #EEEEEE |
 
-
 <!-- Env Variables -->
 ### Environment Variables
 
 This project requires certain environment variables and configuration settings to run correctly. These settings can be found at <a href="">this link</a>.
 
+
+## Deliverables
+1. Public Wiki: https://github.com/Andreii1414/Migration-reporting-tool/wiki
+2. Falsehood, UI Faces, C4 Model, Design Docs: https://docs.google.com/document/d/1Bl7rBoMQgfKZMvLB0fGxFYaK7EEDNZuoTHBYo6DZlEk/edit?usp=sharing
+3. API Specification (OpenAPI/GraphQL): https://app.swaggerhub.com/apis/mirt/Migration-Reporting-Tool/1.0.0
+4. Technical Report (Scholarly HTML): https://github.com/Andreii1414/Migration-reporting-tool/blob/main/tehnical%20report/tehnical-report.html
+    - Internal data structures and models used in the application
+    - Technical details of the API (REST/GraphQL) and its architecture
+    - RDF-based knowledge models, ontologies, taxonomies, or vocabularies used
+    - Integration of external knowledge bases (Wikidata, DBpedia, etc.), including non-trivial SPARQL queries
+    - User Guide: https://www.youtube.com/watch?v=POh1sB7q3CQ
+5. Fully Deployed Solution: https://migration-reporting-tool-frontend.onrender.com/
+
+### Team Contributions
+
+<ul>
+<li>Andrei Apricopoai: Implemented authentication features (login, register, Google login, password reset), set up the project and created the reporting form.</li>
+<li>Andrei Socoteala: Developed data extraction from Flickr, migrated data to GraphDB, created queries for predefined statistics, and built the endpoint route for custom SPARQL statistics.</li>
+<li>Both: Created the interactive map displaying bird sightings.</li>
+</ul>
+
+### Project Progress
+
+<ul>
+<li>Progress 1: Andrei Apricopoai set up the project using Node.js, React, and MongoDB</li>
+<li>Progress 2: Andrei Socoteala created the system that extracts data from Flickr using the Flickr API, Google Vision API, and Big Data Cloud API.</li>
+<li>Progress 3: Andrei Apricopoai created the report form system, including the frontend interface for user submissions.</li>
+<li>Progress 4: Andrei Socoteala built the system that migrates extracted data to GraphDB and generates predefined statistical queries.</li>
+<li>Progress 5: Andrei Socoteala developed the SPARQL endpoint system for handling custom statistics queries.</li>
+<li>Progress 6: Both created the interactive map system, including frontend and backend integration for visualizing bird sightings.</li>
+<li>Progress 7: Andrei Apricopoai built the authentication system, including frontend and backend for login, register, Google login, password reset, and user session management.</li>
+</ul>
 
 <!-- Getting Started -->
 ## Getting Started
@@ -180,18 +215,6 @@ npm install
 ```bash
 npm start
 ```
-
-
-<!-- Deployment -->
-### Deployment
-
-<h6>To deploy the project, run:</h6>
-
-```bash
-npm run build
-npm run deploy
-```
-
 
 <!-- Usage -->
 ## Usage
@@ -327,3 +350,4 @@ This project utilizes several valuable resources and tools:
  - [SparQL](https://www.w3.org/TR/sparql11-query/)
 
 
+**Tags:** project, infoiasi, wade, web
