@@ -1,4 +1,3 @@
-Welcome to the Migration-reporting-tool wiki!
 # Migration-reporting-tool
 
 
